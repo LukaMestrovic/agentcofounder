@@ -254,7 +254,9 @@ describe("result contract", () => {
     const repositoryRoot = await mkdtemp(path.join(os.tmpdir(), "agent-cofounder-result-locations-"));
     const appDirectory = path.join(repositoryRoot, "output", "app");
     const rootResultPath = path.join(repositoryRoot, "result.json");
+    const artifactResultPath = path.join(repositoryRoot, "artifacts", "runs", "run-01", "result.json");
     await mkdir(appDirectory, { recursive: true });
+    await mkdir(path.dirname(artifactResultPath), { recursive: true });
     try {
       const result = composeResult(
         partial,
@@ -264,15 +266,18 @@ describe("result contract", () => {
         portReclamation,
         rootStartCommand(repositoryRoot, appDirectory),
       );
-      await writeResult(appDirectory, result, [rootResultPath]);
-      const [appResult, rootResult] = await Promise.all([
+      await writeResult(appDirectory, result, [rootResultPath, artifactResultPath]);
+      const [appResult, rootResult, artifactResult] = await Promise.all([
         readFile(path.join(appDirectory, "result.json"), "utf8").then(JSON.parse),
         readFile(rootResultPath, "utf8").then(JSON.parse),
+        readFile(artifactResultPath, "utf8").then(JSON.parse),
       ]);
 
       expect(appResult.start_command).toBe("npm run dev");
       expect(rootResult.start_command).toBe(ROOT_START_COMMAND);
+      expect(artifactResult.start_command).toBe("npm --prefix '../../../output/app' run dev");
       expect({ ...appResult, start_command: ROOT_START_COMMAND }).toEqual(rootResult);
+      expect({ ...artifactResult, start_command: ROOT_START_COMMAND }).toEqual(rootResult);
     } finally {
       await rm(repositoryRoot, { recursive: true });
     }

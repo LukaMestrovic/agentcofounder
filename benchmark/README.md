@@ -2,7 +2,7 @@
 
 These synthetic ideas exercise different product structures without entering runtime prompts or reusable solution code. Compare two frozen commits in separate worktrees with the same provider, model, thinking level, and idea file.
 
-Run every idea three times per commit, always using a fresh output directory. Preserve each root `result.json` under an external results directory before starting the next run. Do not use one generated app as the seed for another.
+Run every idea three times per commit, always using a fresh output directory. The runner preserves each report locally at `artifacts/runs/<run-id>/result.json`; the root `result.json` is only the latest compatibility copy. Copy representative reports into a named folder under `benchmark/results/` when they should be reviewed and versioned in GitHub. Do not use one generated app as the seed for another.
 
 For every result, calculate:
 

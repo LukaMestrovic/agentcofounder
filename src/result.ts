@@ -26,7 +26,12 @@ function quotePosixShellArgument(value: string): string {
 }
 
 export function rootStartCommand(repositoryRoot: string, appDirectory: string): string {
-  const relativeAppDirectory = path.relative(repositoryRoot, appDirectory).split(path.sep).join("/");
+  return resultStartCommand(repositoryRoot, appDirectory);
+}
+
+function resultStartCommand(resultDirectory: string, appDirectory: string): string {
+  const relativeAppDirectory = path.relative(resultDirectory, appDirectory).split(path.sep).join("/");
+  if (relativeAppDirectory === "") return APP_DIRECTORY_START_COMMAND;
   return `npm --prefix ${quotePosixShellArgument(relativeAppDirectory)} run dev`;
 }
 
@@ -115,7 +120,13 @@ export async function writeResult(
   const writtenPaths: string[] = [];
   const destinations = [
     { path: resultPath, value: { ...result, start_command: APP_DIRECTORY_START_COMMAND } },
-    ...mirrorPaths.map((destination) => ({ path: destination, value: result })),
+    ...mirrorPaths.map((destination) => ({
+      path: destination,
+      value: {
+        ...result,
+        start_command: resultStartCommand(path.dirname(destination), appDirectory),
+      },
+    })),
   ];
   for (const destination of destinations) {
     try {

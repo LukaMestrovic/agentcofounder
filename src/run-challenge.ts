@@ -486,8 +486,9 @@ async function main(): Promise<void> {
   let result = composeResult(partial, usage, combinedExitCode, verification, portReclamation, startCommand);
   const appResultPath = path.join(outputDirectory, "result.json");
   const rootResultPath = path.join(REPOSITORY_ROOT, "result.json");
-  const requiredResultPaths = [appResultPath, rootResultPath];
-  let resultPaths = await writeResult(outputDirectory, result, [rootResultPath]);
+  const artifactResultPath = path.join(artifactDirectory, "result.json");
+  const requiredResultPaths = [appResultPath, rootResultPath, artifactResultPath];
+  let resultPaths = await writeResult(outputDirectory, result, [rootResultPath, artifactResultPath]);
   let repairTimedOut = false;
   if (canVerifyApp && validatedSchema) {
     let verificationAttempt = 0;
@@ -560,7 +561,7 @@ async function main(): Promise<void> {
       (await Promise.all(eventFiles.map(async (file) => await readFile(file, "utf8")))).join("\n"),
     );
     result = composeResult(partial, usage, combinedExitCode, verification, portReclamation, startCommand);
-    resultPaths = await writeResult(outputDirectory, result, [rootResultPath]);
+    resultPaths = await writeResult(outputDirectory, result, [rootResultPath, artifactResultPath]);
   }
   const missingResultPaths = missingRequiredResultPaths(resultPaths, requiredResultPaths);
   const validationErrors = await validateResultObject(result);

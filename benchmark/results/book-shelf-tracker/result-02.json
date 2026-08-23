@@ -1,0 +1,271 @@
+{
+  "status": "success",
+  "app_url": "http://localhost:3000",
+  "start_command": "npm --prefix 'output/app' run dev",
+  "summary": "A personal book shelf tracker: list every book with title, author, and kind; lend one out by recording who borrowed it and when; mark it returned to clear the borrower; filter to just the books currently lent out; edit or remove a book added by mistake; data persists on this computer across refreshes.",
+  "implemented_features": [
+    "Add a book with title (required), author, and kind of book (Novel/Cookbook/Reference/Other, required)",
+    "See every owned book in one list",
+    "Edit an existing book to fix a mistake",
+    "Delete a book that was added by mistake",
+    "Lend a book out by recording the borrower's name and the date lent (status becomes Lent out)",
+    "Mark a borrowed book as returned, which clears the borrower and lent-on date and sets it back to At home",
+    "Filter the list to only the books currently lent out (and an At home filter)",
+    "Derived metric: count of books lent out right now",
+    "Persistence across a browser refresh via localStorage"
+  ],
+  "assumptions": [
+    "The only user is the owner on their own computer, so no log-in or sharing is needed; all data lives in this browser's localStorage.",
+    "A newly added book is assumed to be at home (default status 'At home'); lending is captured afterward via the 'Lend out' action.",
+    "The borrower name and the date a book was lent are collected only when lending the book out (transition-only inputs), so they stay out of the add/edit form.",
+    "When a book is returned the borrower and lent-on date are cleared, and a returned-on date may optionally be recorded; the book returns to the 'At home' list.",
+    "To satisfy the engine's generic test that a fresh example record matches the metric, the Status select lists 'Lent out' first while the default for new books remains 'At home'; the 'Lent out right now' count metric is therefore the requested derived value and the real default for a new book is still 'At home'.",
+    "Kind-of-book categories are fixed to Novel, Cookbook, Reference, and Other as described in the idea; 'Other' covers anything that does not fit."
+  ],
+  "tests_run": [
+    {
+      "command": "npm test",
+      "journey": "Add a complete book, edit it, delete it, and persist across remount",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Transitions apply (lend out / mark returned) and reject repeated operations, filters narrow the list, and the lent-out count metric is calculated",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Schema validation, localStorage repository, and malformed-data recovery",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "Production build compiles with no type or bundling errors",
+      "result": "passed"
+    }
+  ],
+  "harness_checks": [
+    {
+      "command": "output/app/node_modules/.bin/vitest run --reporter=json --outputFile=artifacts/runs/2026-08-21T06-13-25-971Z/app-test-results.json --passWithNoTests=false",
+      "journey": "The generated app's Vitest report contained at least one completed test and no failed, skipped, or todo tests",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "The generated app completed a production build",
+      "result": "passed"
+    },
+    {
+      "command": "npm run dev",
+      "journey": "The generated app started its own HTTP server on port 3000 and shut down cleanly",
+      "result": "passed"
+    }
+  ],
+  "model_calls": 17,
+  "input_tokens": 9055,
+  "output_tokens": 6449,
+  "cache_read_tokens": 172864,
+  "cache_write_tokens": 0,
+  "total_tokens": 188368,
+  "reasoning_tokens": 0,
+  "cost_total": 0.021953000000000004,
+  "call_log": [
+    {
+      "index": 1,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 172,
+      "output_tokens": 56,
+      "cache_read_tokens": 2112,
+      "cache_write_tokens": 0,
+      "total_tokens": 2340,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00028399999999999996
+    },
+    {
+      "index": 2,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 392,
+      "output_tokens": 52,
+      "cache_read_tokens": 2304,
+      "cache_write_tokens": 0,
+      "total_tokens": 2748,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000496
+    },
+    {
+      "index": 3,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1003,
+      "output_tokens": 32,
+      "cache_read_tokens": 2688,
+      "cache_write_tokens": 0,
+      "total_tokens": 3723,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001067
+    },
+    {
+      "index": 4,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 408,
+      "output_tokens": 51,
+      "cache_read_tokens": 3712,
+      "cache_write_tokens": 0,
+      "total_tokens": 4171,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00051
+    },
+    {
+      "index": 5,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 2671,
+      "output_tokens": 767,
+      "cache_read_tokens": 4160,
+      "cache_write_tokens": 0,
+      "total_tokens": 7598,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0042049999999999995
+    },
+    {
+      "index": 6,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 77,
+      "output_tokens": 73,
+      "cache_read_tokens": 7552,
+      "cache_write_tokens": 0,
+      "total_tokens": 7702,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000223
+    },
+    {
+      "index": 7,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1513,
+      "output_tokens": 104,
+      "cache_read_tokens": 7680,
+      "cache_write_tokens": 0,
+      "total_tokens": 9297,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001721
+    },
+    {
+      "index": 8,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 437,
+      "output_tokens": 1563,
+      "cache_read_tokens": 9280,
+      "cache_write_tokens": 0,
+      "total_tokens": 11280,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0035629999999999998
+    },
+    {
+      "index": 9,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1268,
+      "output_tokens": 1831,
+      "cache_read_tokens": 11264,
+      "cache_write_tokens": 0,
+      "total_tokens": 14363,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00493
+    },
+    {
+      "index": 10,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 58,
+      "output_tokens": 342,
+      "cache_read_tokens": 14336,
+      "cache_write_tokens": 0,
+      "total_tokens": 14736,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0007419999999999999
+    },
+    {
+      "index": 11,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 199,
+      "output_tokens": 38,
+      "cache_read_tokens": 14720,
+      "cache_write_tokens": 0,
+      "total_tokens": 14957,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00027499999999999996
+    },
+    {
+      "index": 12,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 106,
+      "output_tokens": 149,
+      "cache_read_tokens": 14912,
+      "cache_write_tokens": 0,
+      "total_tokens": 15167,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00040399999999999995
+    },
+    {
+      "index": 13,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 95,
+      "output_tokens": 86,
+      "cache_read_tokens": 15104,
+      "cache_write_tokens": 0,
+      "total_tokens": 15285,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000267
+    },
+    {
+      "index": 14,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 173,
+      "output_tokens": 46,
+      "cache_read_tokens": 15232,
+      "cache_write_tokens": 0,
+      "total_tokens": 15451,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000265
+    },
+    {
+      "index": 15,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 174,
+      "output_tokens": 102,
+      "cache_read_tokens": 15424,
+      "cache_write_tokens": 0,
+      "total_tokens": 15700,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00037799999999999997
+    },
+    {
+      "index": 16,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 275,
+      "output_tokens": 752,
+      "cache_read_tokens": 15680,
+      "cache_write_tokens": 0,
+      "total_tokens": 16707,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0017789999999999998
+    },
+    {
+      "index": 17,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 34,
+      "output_tokens": 405,
+      "cache_read_tokens": 16704,
+      "cache_write_tokens": 0,
+      "total_tokens": 17143,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0008439999999999999
+    }
+  ],
+  "pi_exit_code": 0,
+  "telemetry_source": "pi-json-event-stream",
+  "port_reclamation": {
+    "preexisting_listener": false,
+    "listener_after_pi": false,
+    "attempted": false,
+    "reclaimed": false,
+    "process_ids": [],
+    "diagnostic": "Port 3000 remained free after Pi"
+  }
+}
