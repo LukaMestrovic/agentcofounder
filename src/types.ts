@@ -57,6 +57,15 @@ export interface PartialRunResult {
 export interface AppVerification {
   passed: boolean;
   checks: TestRun[];
+  failures: VerificationFailure[];
+}
+
+export interface VerificationFailure {
+  check: "structure" | "test" | "build" | "dev";
+  summary: string;
+  log_path?: string;
+  excerpt: string;
+  implicated_files: string[];
 }
 
 export interface PortReclamationAudit {

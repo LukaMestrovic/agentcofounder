@@ -63,7 +63,9 @@ export default function protectedPaths(pi: ExtensionAPI) {
   });
 
   pi.on("tool_call", async (event, context) => {
-    if (event.toolName !== "write" && event.toolName !== "edit") return undefined;
+    const mutatingTool = event.toolName === "write" || event.toolName === "edit";
+    const repairRead = event.toolName === "read" && process.env.CHALLENGE_AGENT_PHASE?.startsWith("repair:");
+    if (!mutatingTool && !repairRead) return undefined;
     const candidate = String((event.input as Record<string, unknown>).path ?? "");
     const absolute = path.resolve(appRoot, candidate);
     const relative = path.relative(appRoot, absolute);
@@ -95,13 +97,15 @@ export default function protectedPaths(pi: ExtensionAPI) {
     }
     if (!protectedPath && !plannerViolation && !assignmentViolation) return undefined;
 
-    if (context.hasUI) context.ui.notify(`Blocked write to protected path: ${candidate}`, "warning");
+    if (context.hasUI) context.ui.notify(`Blocked file access outside phase scope: ${candidate}`, "warning");
     return {
       block: true,
       reason: plannerViolation
         ? "The planner may only write app-schema.json"
         : assignmentViolation
-          ? "This path belongs to a different implementation task"
+          ? repairRead
+            ? "The repair may only read its candidate files"
+            : "This path belongs to a different implementation task"
           : "Path is outside the app workspace or is runner-owned",
     };
   });

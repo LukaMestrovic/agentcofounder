@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import type { AppSchema } from "../src/app-schema.js";
 import {
   fallbackPartialResult,
+  fallbackUnverifiedPartialResult,
   finalizeVerifiedPartialResult,
   normalizeGeneratedEntry,
   prepareGeneratedTestHarness,
@@ -43,8 +44,8 @@ describe("generated app finalization", () => {
       journeys: [{ label: "Add records" }],
       quality: { test_journeys: ["Add a record"] },
     } as AppSchema;
-    expect(() => fallbackPartialResult(schema, { passed: false, checks: [] })).toThrow("verification passes");
-    expect(fallbackPartialResult(schema, { passed: true, checks: [] })).toMatchObject({
+    expect(() => fallbackPartialResult(schema, { passed: false, checks: [], failures: [] })).toThrow("verification passes");
+    expect(fallbackPartialResult(schema, { passed: true, checks: [], failures: [] })).toMatchObject({
       status: "success",
       implemented_features: ["Add records"],
       tests_run: [{ result: "passed" }],
@@ -68,8 +69,8 @@ describe("generated app finalization", () => {
       tests_run: [],
     };
 
-    expect(finalizeVerifiedPartialResult(partial, schema, { passed: false, checks: [] })).toBe(partial);
-    expect(finalizeVerifiedPartialResult(partial, schema, { passed: true, checks: [] })).toEqual({
+    expect(finalizeVerifiedPartialResult(partial, schema, { passed: false, checks: [], failures: [] })).toBe(partial);
+    expect(finalizeVerifiedPartialResult(partial, schema, { passed: true, checks: [], failures: [] })).toEqual({
       ...partial,
       status: "success",
       tests_run: [{
@@ -78,5 +79,21 @@ describe("generated app finalization", () => {
         result: "passed",
       }],
     });
+  });
+
+  it("reports exhausted verification as partial without model-authored bookkeeping", () => {
+    const schema = {
+      product: { name: "Tool", promise: "Help", audience: "One user" },
+      data_model: { persistence: "localStorage" },
+      journeys: [{ label: "Add records" }],
+      quality: { test_journeys: ["Add a record"] },
+    } as AppSchema;
+    const partial = fallbackUnverifiedPartialResult(schema, {
+      passed: false,
+      checks: [{ command: "npm run build", journey: "Build", result: "failed" }],
+      failures: [],
+    });
+    expect(partial.status).toBe("partial");
+    expect(partial.tests_run).toEqual([expect.objectContaining({ result: "failed" })]);
   });
 });

@@ -1,0 +1,1 @@
+I need a private tracker for recurring household chores. Each chore has a title, room, frequency, and next due date. I want to add, edit, delete, and mark chores complete, which should advance the next due date. Show overdue chores separately and display how many are due this week. Everything should remain on this computer after refresh.

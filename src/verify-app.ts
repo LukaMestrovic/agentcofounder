@@ -3,13 +3,15 @@ import { readFile, writeFile } from "node:fs/promises";
 import net from "node:net";
 import path from "node:path";
 import { signalProcessTree, usesDetachedProcessGroup } from "./process-tree.js";
-import type { AppVerification, TestRun } from "./types.js";
+import type { AppVerification, TestRun, VerificationFailure } from "./types.js";
 
 const MAX_LOG_BYTES = 5 * 1024 * 1024;
+const MAX_DIAGNOSTIC_CHARACTERS = 4_000;
 
 interface CommandOutcome {
   exitCode: number;
   timedOut: boolean;
+  output: string;
 }
 
 interface VitestReport {
@@ -89,7 +91,7 @@ async function runLoggedCommand(
 ): Promise<CommandOutcome> {
   const captured: CapturedOutput = { chunks: [], length: 0, truncated: false };
 
-  const outcome = await new Promise<CommandOutcome>((resolve) => {
+  const outcome = await new Promise<Omit<CommandOutcome, "output">>((resolve) => {
     let child: ChildProcess;
     try {
       child = spawn(command, args, {
@@ -141,8 +143,44 @@ async function runLoggedCommand(
     child.once("close", (code) => finish(timedOut ? 124 : (code ?? 1)));
   });
 
-  await safeWriteLog(logPath, renderOutput(captured));
-  return outcome;
+  const output = renderOutput(captured);
+  await safeWriteLog(logPath, output);
+  return { ...outcome, output };
+}
+
+export function diagnosticExcerpt(value: string, limit = MAX_DIAGNOSTIC_CHARACTERS): string {
+  const normalized = value
+    .replace(/\u001B\[[0-?]*[ -/]*[@-~]/gu, "")
+    .replaceAll("\u0000", "")
+    .trim();
+  if (normalized.length <= limit) return normalized;
+  const prefix = "[earlier output omitted]\n";
+  return `${prefix}${normalized.slice(-(limit - prefix.length))}`;
+}
+
+export function extractImplicatedSourceFiles(value: string): string[] {
+  const files = new Set<string>();
+  const pattern = /(?:^|[\s('"`\\/])((?:\.\/)?src[\\/][A-Za-z0-9_.\\/-]+\.(?:css|ts|tsx))(?=$|[\s):,'"`])/gmu;
+  for (const match of value.matchAll(pattern)) {
+    const candidate = String(match[1]).replace(/^\.\//u, "").replaceAll("\\", "/");
+    if (!candidate.split("/").includes("..")) files.add(candidate);
+  }
+  return [...files].sort();
+}
+
+function verificationFailure(
+  check: VerificationFailure["check"],
+  summary: string,
+  output: string,
+  logPath?: string,
+): VerificationFailure {
+  return {
+    check,
+    summary,
+    ...(logPath ? { log_path: path.basename(logPath) } : {}),
+    excerpt: diagnosticExcerpt(output || summary),
+    implicated_files: extractImplicatedSourceFiles(output),
+  };
 }
 
 async function hostHasListener(host: string, port: number, timeoutMs: number): Promise<boolean> {
@@ -206,10 +244,11 @@ async function verifyDevelopmentServer(
   timeoutMs: number,
   npmCommand: string,
   port: number,
-): Promise<boolean> {
+): Promise<{ passed: boolean; output: string }> {
   if (await portHasListener(port)) {
-    await safeWriteLog(logPath, `Port ${port} already had a listener before app verification.\n`);
-    return false;
+    const output = `Port ${port} already had a listener before app verification.\n`;
+    await safeWriteLog(logPath, output);
+    return { passed: false, output };
   }
 
   const captured: CapturedOutput = { chunks: [], length: 0, truncated: false };
@@ -225,8 +264,9 @@ async function verifyDevelopmentServer(
       stdio: ["ignore", "pipe", "pipe"],
     });
   } catch (error) {
-    await safeWriteLog(logPath, `${String(error)}\n`);
-    return false;
+    const output = `${String(error)}\n`;
+    await safeWriteLog(logPath, output);
+    return { passed: false, output };
   }
 
   child.stdout?.on("data", (chunk: Buffer) => {
@@ -279,8 +319,9 @@ async function verifyDevelopmentServer(
   }
 
   const portClosed = await waitForPortToClose(port, 2_000);
-  await safeWriteLog(logPath, renderOutput(captured));
-  return served && childClosed && portClosed;
+  const output = renderOutput(captured);
+  await safeWriteLog(logPath, output);
+  return { passed: served && childClosed && portClosed, output };
 }
 
 function testRun(command: string, journey: string, result: TestRun["result"]): TestRun {
@@ -352,6 +393,7 @@ export function unavailableAppVerification(reason: string): AppVerification {
       testRun("npm run build", `Production build was not run: ${reason}`, "failed"),
       testRun("npm run dev", `HTTP startup probe was not run: ${reason}`, "failed"),
     ],
+    failures: [verificationFailure("structure", reason, reason)],
   };
 }
 
@@ -387,7 +429,7 @@ export async function verifyGeneratedApp(
       path.join(artifactDirectory, "app-build.log"),
       commandTimeoutMs,
     );
-    const serverPassed = await verifyDevelopmentServer(
+    const server = await verifyDevelopmentServer(
       appDirectory,
       path.join(artifactDirectory, "app-dev.log"),
       serverTimeoutMs,
@@ -409,11 +451,48 @@ export async function verifyGeneratedApp(
       testRun(
         commands.dev,
         `The generated app started its own HTTP server on port ${port} and shut down cleanly`,
-        serverPassed ? "passed" : "failed",
+        server.passed ? "passed" : "failed",
       ),
     ];
+    const failures: VerificationFailure[] = [];
+    if (!testsPassed) {
+      let reportOutput = "";
+      try {
+        reportOutput = await readFile(testReportPath, "utf8");
+      } catch {
+        // The command output still contains the available diagnostic.
+      }
+      failures.push(
+        verificationFailure(
+          "test",
+          test.timedOut ? "Generated tests timed out" : "Generated tests did not pass cleanly",
+          `${test.output}\n${reportOutput}`,
+          path.join(artifactDirectory, "app-test.log"),
+        ),
+      );
+    }
+    if (build.exitCode !== 0) {
+      failures.push(
+        verificationFailure(
+          "build",
+          build.timedOut ? "Production build timed out" : "Production build failed",
+          build.output,
+          path.join(artifactDirectory, "app-build.log"),
+        ),
+      );
+    }
+    if (!server.passed) {
+      failures.push(
+        verificationFailure(
+          "dev",
+          "Development server did not start and stop cleanly",
+          server.output,
+          path.join(artifactDirectory, "app-dev.log"),
+        ),
+      );
+    }
 
-    return { passed: checks.every((entry) => entry.result === "passed"), checks };
+    return { passed: checks.every((entry) => entry.result === "passed"), checks, failures };
   } catch (error) {
     await safeWriteLog(path.join(artifactDirectory, "app-verification-error.log"), `${String(error)}\n`);
     return {
@@ -422,6 +501,14 @@ export async function verifyGeneratedApp(
         testRun(commands.test.display, "App verification encountered an internal error", "failed"),
         testRun(commands.build, "Production build could not be verified", "failed"),
         testRun(commands.dev, "HTTP startup could not be verified", "failed"),
+      ],
+      failures: [
+        verificationFailure(
+          "structure",
+          "App verification encountered an internal error",
+          String(error),
+          path.join(artifactDirectory, "app-verification-error.log"),
+        ),
       ],
     };
   }

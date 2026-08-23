@@ -64,4 +64,15 @@ describe("app schema", () => {
     expect(errors.some((error) => error.includes("task role domain is duplicated"))).toBe(true);
     expect(errors.some((error) => error.includes("architecture assigns experience"))).toBe(true);
   });
+
+  it("requires one quality-owned TSX test so UI coverage cannot invalidate the extension", () => {
+    const schema = validSchema();
+    const architecture = schema.architecture as { files: Array<Record<string, unknown>> };
+    architecture.files[2]!.path = "src/App.test.ts";
+    const tasks = schema.tasks as Array<{ agent: string; files: string[] }>;
+    tasks.find((task) => task.agent === "quality")!.files = ["src/App.test.ts"];
+    expect(validateAppSchema(schema)).toContain(
+      "quality must own exactly one consolidated src/**/*.test.tsx file",
+    );
+  });
 });

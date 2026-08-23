@@ -1,0 +1,1 @@
+Make a personal recipe organizer that works locally. A recipe needs a name, meal type, preparation time, ingredients, and notes. I want to add and edit recipes, search names and ingredients, filter by meal type and maximum preparation time, mark favorites, and delete mistakes. Include useful empty and no-results states, and keep recipes and favorites after refresh.

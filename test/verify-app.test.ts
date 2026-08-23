@@ -4,7 +4,12 @@ import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { portHasListener, verifyGeneratedApp } from "../src/verify-app.js";
+import {
+  diagnosticExcerpt,
+  extractImplicatedSourceFiles,
+  portHasListener,
+  verifyGeneratedApp,
+} from "../src/verify-app.js";
 
 const temporaryDirectories: string[] = [];
 const defaultPortOccupied = await portHasListener(3000);
@@ -93,6 +98,14 @@ afterEach(async () => {
 });
 
 describe("app verification", () => {
+  it("bounds diagnostics and extracts only safe source paths", () => {
+    const output = `\u001b[31merror\u001b[0m in src/App.tsx and ./src/domain.ts\n../outside.ts\n${"x".repeat(5_000)}`;
+    const excerpt = diagnosticExcerpt(output);
+    expect(excerpt.length).toBeLessThanOrEqual(4_000);
+    expect(excerpt).not.toContain("\u001b[31m");
+    expect(extractImplicatedSourceFiles(output)).toEqual(["src/App.tsx", "src/domain.ts"]);
+  });
+
   it("detects a listener bound to the wildcard address", async () => {
     const server = net.createServer((socket) => socket.end());
     await new Promise<void>((resolve, reject) => {
@@ -127,6 +140,7 @@ describe("app verification", () => {
     expect(result.passed).toBe(false);
     expect(result.checks).toHaveLength(3);
     expect(result.checks.every((entry) => entry.result !== "passed")).toBe(true);
+    expect(result.failures.length).toBeGreaterThan(0);
   });
 
   it("rejects the untouched zero-test seed while confirming that it builds and serves", async () => {
@@ -141,6 +155,7 @@ describe("app verification", () => {
 
     expect(result.passed).toBe(false);
     expect(result.checks.map((entry) => entry.result)).toEqual(["failed", "passed", "passed"]);
+    expect(result.failures.map((failure) => failure.check)).toEqual(["test"]);
   }, 45_000);
 
   it("never accepts HTTP from a server that already owned the configured port", async () => {
@@ -219,6 +234,7 @@ describe("app verification", () => {
 
     expect(result.passed).toBe(true);
     expect(result.checks.map((entry) => entry.result)).toEqual(["passed", "passed", "passed"]);
+    expect(result.failures).toEqual([]);
     expect(result.checks[0]?.command).toContain("--outputFile=");
     expect(result.checks[0]?.command).toContain(path.join("app", "node_modules", ".bin", "vitest"));
     const displayedReportPath = result.checks[0]?.command.split("--outputFile=")[1]?.split(" ")[0];

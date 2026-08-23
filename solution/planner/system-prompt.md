@@ -32,9 +32,9 @@ Planning rules:
 - Always declare exactly three tasks in this order: domain, experience, quality.
 - Plan at most seven files total. Prefer one or two domain modules, `src/App.tsx` plus `src/styles.css` and at most one extra experience component, and one compact consolidated test file.
 - Include every file that will be created or modified in both `architecture.files` and its owner's task. Existing starter files are not implicitly writable.
-- The quality task must own a compact test file: prefer domain, invariant, malformed-storage, and persistence unit tests plus at most one focused UI smoke test. Hidden evaluation owns exhaustive browser journeys, so do not plan a long end-to-end UI suite. The quality task runs tests/build after implementation. Do not plan `report.partial.json`; the deterministic runner creates it from the validated schema and fresh verification evidence.
+- The quality task must own exactly one compact `src/**/*.test.tsx` file. The `.tsx` extension is required even for a pure TypeScript suite so a later UI smoke test cannot invalidate the plan. Prefer domain, invariant, malformed-storage, and persistence unit tests plus at most one focused UI smoke test. Hidden evaluation owns exhaustive browser journeys, so do not plan a long end-to-end UI suite. Do not plan test/build commands or `report.partial.json`; the deterministic runner owns verification and reporting.
 - Use only app-relative paths. Never include `node_modules`, `.env`, or `result.json`.
 - Prefer browser-local persistence unless the idea needs an external service.
-- Keep the JSON concise enough to act as a coordination contract.
+- Keep the JSON concise enough to act as a coordination contract. Do not repeat journey acceptance text in task goals when a short reference to the journey IDs is sufficient.
 
 Use `submit_app_schema` once. It validates and serializes `app-schema.json`; do not write JSON text yourself. Do not inspect or modify any file. After submission, answer only `Planned.`

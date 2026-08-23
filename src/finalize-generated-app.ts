@@ -67,6 +67,34 @@ export function fallbackPartialResult(schema: AppSchema, verification: AppVerifi
   };
 }
 
+export function fallbackUnverifiedPartialResult(
+  schema: AppSchema,
+  verification: AppVerification,
+): PartialRunResult {
+  const failedChecks = verification.checks
+    .filter((check) => check.result === "failed")
+    .map((check) => check.command)
+    .join(", ");
+  return {
+    status: "partial",
+    app_url: "http://localhost:3000",
+    start_command: "npm run dev",
+    summary: `${schema.product.name}: generation completed, but independent verification did not pass.`,
+    implemented_features: schema.journeys.map((journey) => journey.label),
+    assumptions: [
+      `Built for ${schema.product.audience}.`,
+      `Persistence decision: ${schema.data_model.persistence}`,
+    ],
+    tests_run: [
+      {
+        command: "npm test",
+        journey: `Generated journey verification failed: ${schema.quality.test_journeys.join("; ")}. Failed checks: ${failedChecks || "unknown"}`,
+        result: "failed",
+      },
+    ],
+  };
+}
+
 export function finalizeVerifiedPartialResult(
   partial: PartialRunResult,
   schema: AppSchema,

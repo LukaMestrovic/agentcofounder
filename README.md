@@ -69,6 +69,8 @@ Generated apps all default to port 3000, so run one preview at a time.
 
 Each paid run has an indicative €0.25 safety target by default, plus hard per-agent model-call and output-token limits. Override it only deliberately with `CHALLENGE_EXPERIMENT_MAX_EUR`; the runner will not begin implementation if planning already consumes the target.
 
+The runner permits at most two fresh repair sessions after independent verification. Set `CHALLENGE_MAX_REPAIRS` to `0`, `1`, or `2`; the default is `2`.
+
 For a setup-only check that does not call a model:
 
 ```bash
@@ -90,9 +92,11 @@ npm run validate:result -- output/app/result.json
 
 ## Result and telemetry ownership
 
-The runner writes `report.partial.json` only after its fresh test, build, and live-server checks pass, deriving the product summary and journeys from the validated app schema. It then writes `result.json` after parsing Pi's completed `message_end` events. This keeps bookkeeping out of the model context and prevents the model from inventing headline token totals.
+The runner derives `report.partial.json` from the validated schema and final verification state. It writes `result.json` after parsing every completed planner, generator, and repair event. This keeps bookkeeping out of model context and prevents the model from inventing headline token totals.
 
-The runner first invokes a small planner with the product idea and canonical journey guidance. A typed submission tool validates and writes `output/app/app-schema.json`, a prompt-specific blueprint covering product journeys, data rules, visual direction, ordinary source files, and task ownership. The schema is coordination data, not a fixed UI renderer. One integrated builder normally implements and verifies the plan in a shared context; it can invoke one bounded, role-specific subagent only for a targeted repair. All planner, optional delegated-agent, and builder event streams are included in audited usage.
+The runner first invokes a small planner with the product idea and canonical journey guidance. A typed submission tool validates and writes `output/app/app-schema.json`, a prompt-specific blueprint covering product journeys, data rules, visual direction, ordinary source files, and task ownership. The schema is coordination data, not a fixed UI renderer. A one-shot generator then writes the declared idea-specific source without reading files or running checks.
+
+Vitest, production build, and live-server verification run outside the model context. On failure, the runner may launch up to two fresh repair sessions containing bounded diagnostics and a schema-derived write allowlist. The first repair is targeted to implicated task files; the second may inspect all declared files. Generator source-writing history is never replayed into a repair context.
 
 Before model implementation, the runner adjusts only the copied workspace with a named/default React entry adapter and deterministic Testing Library cleanup. These domain-neutral changes avoid spending repair tokens on starter compatibility while leaving the source template untouched. Reporting is also runner-owned, so malformed model bookkeeping cannot invalidate a verified app.
 
@@ -104,13 +108,13 @@ The runner records whether port 3000 was occupied before Pi starts. If Pi leaves
 
 A provisional result is written before app verification starts. Verification failures degrade a completed model run to `partial`; Pi startup or telemetry failures remain `failed`. Equivalent final results are emitted at the generated app root (`output/app/result.json`) and repository root (`result.json`); only `start_command` differs so each command works from the directory containing its result. Failure to write either required destination makes the harness exit non-zero. Port 3000 must be free on both IPv4 and IPv6 loopback addresses before verification begins.
 
-The raw planner, delegated-agent, and orchestrator event streams are retained for audit. Official judging must independently recompute usage across all of them and compare it with `result.json`; the participant-controlled report is never the final scoring authority.
+The raw planner, generator, and repair event streams are retained for audit. Official judging must independently recompute usage across all of them and compare it with `result.json`; the participant-controlled report is never the final scoring authority.
 
 `reasoning_tokens` and `cost_total` are included as additional audit fields. The command also prints the public competition score `input + 3 × output + 0.1 × cache reads`; cache writes are retained separately but are not part of that formula.
 
-## Measured public validation
+## Reference public validation
 
-The final GLM 5.2 public-idea run used Berget with thinking disabled and passed the generated tests, production build, and live-server check. This is a single-run validation rather than a claim about hidden-prompt performance.
+The last measured GLM 5.2 run before context-isolated verification used Berget with thinking disabled and passed the generated tests, production build, and live-server check. These numbers are a historical reference; the phase-isolated pipeline must be benchmarked separately before claiming an additional improvement.
 
 | Metric | Frozen public baseline | Planner-guided solution | Change |
 | --- | ---: | ---: | ---: |
@@ -121,16 +125,16 @@ The final GLM 5.2 public-idea run used Berget with thinking disabled and passed 
 | Weighted score | 97,445.8 | 53,501.4 | **-45.1%** |
 | Pi-reported cost | €0.035804 | €0.028755 | -19.7% |
 
-The planner and builder have separate model-call, output-token, and cost limits. Every delegated repair event is included in the same audited score. The nine development and validation attempts used while designing this approach reported €0.278521 in total, well below the available €25 experiment budget.
+The planner, generator, and repairs have separate model-call, output-token, and cost limits. Every repair event is included in the same audited score. The nine development and validation attempts used while designing the earlier approach reported €0.278521 in total, well below the available €25 experiment budget.
 
 ## Develop the harness
 
-The participant strategy deliberately separates planning from execution:
+The participant strategy deliberately separates planning, generation, verification, and repair:
 
 - `solution/planner/` defines the compact schema-producing planner;
-- `solution/extensions/delegate-task.ts` gives the lead agent bounded, role-specific isolated workers;
-- `solution/orchestrator/` defines integration and verification behavior;
-- `src/app-schema.ts` validates file ownership and prevents architecture plans from escaping the generated app.
+- `solution/orchestrator/` defines one-shot source generation behavior;
+- `solution/repair/` defines bounded fresh-context repair behavior;
+- `src/app-schema.ts` validates file ownership and prevents generation or repair from escaping the generated app.
 
 Do not add a challenge idea's domain vocabulary or expected records to reusable code. The official judging idea will be different.
 

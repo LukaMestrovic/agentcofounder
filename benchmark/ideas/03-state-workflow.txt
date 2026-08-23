@@ -1,0 +1,1 @@
+Create a simple editorial board for article proposals. A proposal has a title, author, short pitch, and status. It starts as Draft and can move to Submitted, In Review, Accepted, or Rejected only through sensible transitions. Let me filter by status, reopen a rejected proposal, and see counts for each active stage. Store the workflow locally without login.

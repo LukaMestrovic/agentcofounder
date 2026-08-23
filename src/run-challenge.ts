@@ -1,17 +1,19 @@
 import { spawn } from "node:child_process";
 import { createWriteStream } from "node:fs";
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { readAppSchema, type AppSchema } from "./app-schema.js";
 import {
   finalizeVerifiedPartialResult,
+  fallbackUnverifiedPartialResult,
   normalizeGeneratedEntry,
   prepareGeneratedTestHarness,
   writePartialReport,
 } from "./finalize-generated-app.js";
 import { handoffToSupportedNode } from "./node-runtime.js";
 import { prepareOutput } from "./prepare-output.js";
+import { buildRepairBrief, type RepairBrief } from "./repair.js";
 import { auditAppPortAfterPi } from "./port-owner.js";
 import { signalProcessTree, terminateProcessTree, usesDetachedProcessGroup } from "./process-tree.js";
 import {
@@ -47,7 +49,6 @@ const SOURCE_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
 const REPOSITORY_ROOT = path.resolve(SOURCE_DIRECTORY, "..");
 const APP_PORT = 3000;
 const PROTECTED_EXTENSION = path.join(REPOSITORY_ROOT, "solution", "extensions", "protected-paths.ts");
-const DELEGATE_EXTENSION = path.join(REPOSITORY_ROOT, "solution", "extensions", "delegate-task.ts");
 const SCHEMA_EXTENSION = path.join(REPOSITORY_ROOT, "solution", "extensions", "submit-app-schema.ts");
 const PI_BINARY = path.join(
   REPOSITORY_ROOT,
@@ -78,8 +79,9 @@ Environment:
   CHALLENGE_PROVIDER              Optional Pi provider override
   CHALLENGE_MODEL                 Optional Pi model override
   CHALLENGE_THINKING              Pi thinking level (default: off)
-  CHALLENGE_TIMEOUT_MS            Wall-clock limit per top-level Pi phase (default: 900000)
+  CHALLENGE_TIMEOUT_MS            Wall-clock limit per top-level Pi phase (default: 3600000)
   CHALLENGE_EXPERIMENT_MAX_EUR    Safety ceiling for one run (default: 0.25)
+  CHALLENGE_MAX_REPAIRS           Fresh verification repair sessions, 0-2 (default: 2)
   CHALLENGE_NODE_BINARY           Optional path to a Node 22 executable
 `);
 }
@@ -247,7 +249,7 @@ export function buildPlannerArguments(idea: string, plannerPrompt: string, publi
 }
 
 export function buildOrchestratorArguments(
-  idea: string,
+  _idea: string,
   schemaJson: string,
   orchestratorPrompt: string,
   _publicJourneys: string,
@@ -265,15 +267,40 @@ export function buildOrchestratorArguments(
     "--no-themes",
     "--no-context-files",
     "--system-prompt",
-    `${orchestratorPrompt.trim()}\n\n${appContext.trim()}`,
+    `${appContext.trim()}\n\n${orchestratorPrompt.trim()}`,
     "--extension",
     PROTECTED_EXTENSION,
-    "--extension",
-    DELEGATE_EXTENSION,
     "--tools",
-    "read,write,edit,bash,delegate_task",
+    "write",
     ...modelArguments(),
-    `Product idea:\n${idea.trim()}\n\nValidated app-schema.json:\n${schemaJson.trim()}\n\nImplement and verify the application now.`,
+    `Validated app-schema.json:\n${schemaJson.trim()}\n\nGenerate every declared application file now.`,
+  ];
+}
+
+export function buildRepairArguments(
+  brief: RepairBrief,
+  repairPrompt: string,
+  appContext: string,
+): string[] {
+  return [
+    "--mode",
+    "json",
+    "--print",
+    "--offline",
+    "--no-session",
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+    "--no-context-files",
+    "--system-prompt",
+    `${appContext.trim()}\n\n${repairPrompt.trim()}`,
+    "--extension",
+    PROTECTED_EXTENSION,
+    "--tools",
+    "read,write,edit",
+    ...modelArguments(),
+    `Repair brief:\n${JSON.stringify(brief)}\n\nRepair only the candidate files now.`,
   ];
 }
 
@@ -289,7 +316,7 @@ export function buildPiArguments(
 }
 
 function timeoutFromEnvironment(): number {
-  const raw = process.env.CHALLENGE_TIMEOUT_MS ?? "900000";
+  const raw = process.env.CHALLENGE_TIMEOUT_MS ?? "3600000";
   const value = Number(raw);
   if (!Number.isSafeInteger(value) || value < 1_000) {
     throw new Error("CHALLENGE_TIMEOUT_MS must be an integer of at least 1000");
@@ -305,26 +332,31 @@ function experimentBudgetFromEnvironment(): number {
   return value;
 }
 
+function maxRepairsFromEnvironment(): number {
+  const value = Number(process.env.CHALLENGE_MAX_REPAIRS ?? "2");
+  if (!Number.isSafeInteger(value) || value < 0 || value > 2) {
+    throw new Error("CHALLENGE_MAX_REPAIRS must be an integer from 0 to 2");
+  }
+  return value;
+}
+
 export async function listAuditEventFiles(artifactDirectory: string): Promise<string[]> {
   const files = [path.join(artifactDirectory, "planner.events.jsonl")];
-  const subagentDirectory = path.join(artifactDirectory, "subagents");
-  try {
-    const children = await readdir(subagentDirectory, { withFileTypes: true });
-    files.push(
-      ...children
-        .filter((child) => child.isFile() && child.name.endsWith(".events.jsonl"))
-        .map((child) => path.join(subagentDirectory, child.name))
-        .sort(),
-    );
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-  }
   const orchestratorEvents = path.join(artifactDirectory, "orchestrator.events.jsonl");
   try {
     await readFile(orchestratorEvents, "utf8");
     files.push(orchestratorEvents);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+  }
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const repairEvents = path.join(artifactDirectory, `repair-${String(attempt).padStart(2, "0")}.events.jsonl`);
+    try {
+      await readFile(repairEvents, "utf8");
+      files.push(repairEvents);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
   }
   return files;
 }
@@ -355,9 +387,10 @@ async function main(): Promise<void> {
   ]);
   if (args.prepareOnly) return;
 
-  const [plannerPrompt, orchestratorPrompt, publicJourneys, appContext] = await Promise.all([
+  const [plannerPrompt, orchestratorPrompt, repairPrompt, publicJourneys, appContext] = await Promise.all([
     readFile(path.join(REPOSITORY_ROOT, "solution", "planner", "system-prompt.md"), "utf8"),
     readFile(path.join(REPOSITORY_ROOT, "solution", "orchestrator", "system-prompt.md"), "utf8"),
+    readFile(path.join(REPOSITORY_ROOT, "solution", "repair", "system-prompt.md"), "utf8"),
     readFile(path.join(REPOSITORY_ROOT, "contract-public", "journeys.md"), "utf8"),
     readFile(path.join(outputDirectory, "AGENTS.md"), "utf8"),
   ]);
@@ -370,6 +403,7 @@ async function main(): Promise<void> {
 
   const timeoutMs = timeoutFromEnvironment();
   const experimentBudget = experimentBudgetFromEnvironment();
+  const maxRepairs = maxRepairsFromEnvironment();
   const appPortHadListenerBeforePi = await portHasListener(APP_PORT);
   console.log("Planning prompt-specific architecture...");
   const planner = await runPi(
@@ -396,7 +430,7 @@ async function main(): Promise<void> {
     try {
       const schemaPath = path.join(outputDirectory, "app-schema.json");
       validatedSchema = await readAppSchema(schemaPath);
-      schemaJson = await readFile(schemaPath, "utf8");
+      schemaJson = JSON.stringify(validatedSchema);
     } catch (error) {
       await writeFile(path.join(artifactDirectory, "schema-validation.log"), String(error), "utf8");
       console.error(String(error));
@@ -407,7 +441,7 @@ async function main(): Promise<void> {
     await readFile(path.join(artifactDirectory, "planner.events.jsonl"), "utf8"),
   );
   if (schemaJson && plannerUsage.cost_total < experimentBudget) {
-    console.log("Executing the validated schema with the integrated builder...");
+    console.log("Generating the validated application in one isolated phase...");
     orchestrator = await runPi(
       buildOrchestratorArguments(idea, schemaJson, orchestratorPrompt, publicJourneys, appContext),
       outputDirectory,
@@ -418,18 +452,12 @@ async function main(): Promise<void> {
         label: "orchestrator",
         environment: {
           CHALLENGE_AGENT_PHASE: "orchestrator",
-          CHALLENGE_ARTIFACT_DIRECTORY: artifactDirectory,
-          CHALLENGE_IDEA_FILE: ideaArtifact,
-          CHALLENGE_PI_BINARY: PI_BINARY,
-          CHALLENGE_PROTECTED_EXTENSION: PROTECTED_EXTENSION,
-          CHALLENGE_MAX_DELEGATIONS: "1",
+          CHALLENGE_ALLOWED_WRITE_PATHS: JSON.stringify(
+            validatedSchema?.architecture.files.map((file) => file.path) ?? [],
+          ),
           CHALLENGE_MAX_OUTPUT_TOKENS: "10000",
-          CHALLENGE_MAX_MODEL_CALLS: "25",
+          CHALLENGE_MAX_MODEL_CALLS: "3",
           CHALLENGE_MAX_AGENT_COST: "0.12",
-          CHALLENGE_SUBAGENT_MAX_OUTPUT_TOKENS: "10000",
-          CHALLENGE_SUBAGENT_MAX_MODEL_CALLS: "10",
-          CHALLENGE_SUBAGENT_MAX_COST: "0.05",
-          CHALLENGE_SUBAGENT_TIMEOUT_MS: "600000",
         },
       },
     );
@@ -437,14 +465,7 @@ async function main(): Promise<void> {
     console.error("Experiment budget was exhausted by planning; implementation was not started.");
   }
 
-  const combinedExitCode = planner.exitCode === 0 && schemaJson ? orchestrator.exitCode : 1;
-  if (combinedExitCode === 0) {
-    try {
-      await normalizeGeneratedEntry(outputDirectory);
-    } catch (error) {
-      console.error(`Generated entry normalization failed: ${String(error)}`);
-    }
-  }
+  let combinedExitCode = planner.exitCode === 0 && schemaJson ? orchestrator.exitCode : 1;
   const portReclamation = await auditAppPortAfterPi(APP_PORT, outputDirectory, appPortHadListenerBeforePi);
   if (portReclamation.listener_after_pi) {
     const message = `${portReclamation.diagnostic}; pids=${portReclamation.process_ids.join(",") || "none"}`;
@@ -452,12 +473,12 @@ async function main(): Promise<void> {
     else console.warn(message);
   }
 
-  const eventFiles = await listAuditEventFiles(artifactDirectory);
-  const usage = collectUsageFromJsonLines(
+  let eventFiles = await listAuditEventFiles(artifactDirectory);
+  let usage = collectUsageFromJsonLines(
     (await Promise.all(eventFiles.map(async (file) => await readFile(file, "utf8")))).join("\n"),
   );
   let partial = await readPartialResult(outputDirectory);
-  const canVerifyApp = combinedExitCode === 0 && usage.model_calls > 0;
+  const canVerifyApp = combinedExitCode === 0 && usage.model_calls > 0 && validatedSchema !== undefined;
   const startCommand = rootStartCommand(REPOSITORY_ROOT, outputDirectory);
   let verification = unavailableAppVerification(
     canVerifyApp ? "app verification had not completed" : "Generation did not complete with audited model usage",
@@ -467,12 +488,77 @@ async function main(): Promise<void> {
   const rootResultPath = path.join(REPOSITORY_ROOT, "result.json");
   const requiredResultPaths = [appResultPath, rootResultPath];
   let resultPaths = await writeResult(outputDirectory, result, [rootResultPath]);
-  if (canVerifyApp) {
-    verification = await verifyGeneratedApp(outputDirectory, artifactDirectory, { displayRoot: REPOSITORY_ROOT });
-    if (verification.passed && validatedSchema) {
-      partial = finalizeVerifiedPartialResult(partial, validatedSchema, verification);
-      await writePartialReport(outputDirectory, partial);
+  let repairTimedOut = false;
+  if (canVerifyApp && validatedSchema) {
+    let verificationAttempt = 0;
+    while (verificationAttempt <= maxRepairs) {
+      const attemptDirectory = path.join(
+        artifactDirectory,
+        "verification",
+        `attempt-${String(verificationAttempt).padStart(2, "0")}`,
+      );
+      await mkdir(attemptDirectory, { recursive: true });
+      try {
+        await normalizeGeneratedEntry(outputDirectory);
+        verification = await verifyGeneratedApp(outputDirectory, attemptDirectory, {
+          displayRoot: REPOSITORY_ROOT,
+        });
+      } catch (error) {
+        const reason = `Generated entry normalization failed: ${String(error)}`;
+        console.error(reason);
+        verification = unavailableAppVerification(reason);
+      }
+
+      if (verification.passed || verificationAttempt === maxRepairs) break;
+
+      eventFiles = await listAuditEventFiles(artifactDirectory);
+      usage = collectUsageFromJsonLines(
+        (await Promise.all(eventFiles.map(async (file) => await readFile(file, "utf8")))).join("\n"),
+      );
+      const remainingBudget = experimentBudget - usage.cost_total;
+      if (remainingBudget < 0.005) {
+        console.error("Experiment budget is too low to start another repair phase.");
+        break;
+      }
+
+      const repairAttempt = (verificationAttempt + 1) as 1 | 2;
+      const brief = buildRepairBrief(validatedSchema, verification, repairAttempt);
+      const repair = await runPi(
+        buildRepairArguments(brief, repairPrompt, appContext),
+        outputDirectory,
+        path.join(artifactDirectory, `repair-${String(repairAttempt).padStart(2, "0")}.events.jsonl`),
+        path.join(artifactDirectory, `repair-${String(repairAttempt).padStart(2, "0")}.stderr.log`),
+        timeoutMs,
+        {
+          label: `repair-${repairAttempt}`,
+          environment: {
+            CHALLENGE_AGENT_PHASE: `repair:${repairAttempt}`,
+            CHALLENGE_ALLOWED_WRITE_PATHS: JSON.stringify(brief.candidate_files.map((file) => file.path)),
+            CHALLENGE_MAX_OUTPUT_TOKENS: "4000",
+            CHALLENGE_MAX_MODEL_CALLS: "4",
+            CHALLENGE_MAX_AGENT_COST: String(Math.min(0.04, remainingBudget)),
+          },
+        },
+      );
+      repairTimedOut ||= repair.timedOut;
+      if (repair.exitCode !== 0) {
+        combinedExitCode = repair.exitCode;
+        break;
+      }
+      verificationAttempt = repairAttempt;
     }
+
+    if (verification.passed) {
+      partial = finalizeVerifiedPartialResult(partial, validatedSchema, verification);
+    } else {
+      partial = fallbackUnverifiedPartialResult(validatedSchema, verification);
+    }
+    await writePartialReport(outputDirectory, partial);
+
+    eventFiles = await listAuditEventFiles(artifactDirectory);
+    usage = collectUsageFromJsonLines(
+      (await Promise.all(eventFiles.map(async (file) => await readFile(file, "utf8")))).join("\n"),
+    );
     result = composeResult(partial, usage, combinedExitCode, verification, portReclamation, startCommand);
     resultPaths = await writeResult(outputDirectory, result, [rootResultPath]);
   }
@@ -495,7 +581,9 @@ async function main(): Promise<void> {
   for (const missingResultPath of missingResultPaths) {
     console.error(`Required result destination was not written: ${missingResultPath}`);
   }
-  if (planner.timedOut || orchestrator.timedOut) console.error("A Pi phase exceeded CHALLENGE_TIMEOUT_MS.");
+  if (planner.timedOut || orchestrator.timedOut || repairTimedOut) {
+    console.error("A Pi phase exceeded CHALLENGE_TIMEOUT_MS.");
+  }
   if (runRequiresFailureExit(combinedExitCode, result.status, missingResultPaths)) process.exitCode = 1;
 }
 

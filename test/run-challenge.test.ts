@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, readFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,10 +10,13 @@ import {
 import {
   buildOrchestratorArguments,
   buildPlannerArguments,
+  buildRepairArguments,
+  listAuditEventFiles,
   parseArguments,
   runPi,
   runRequiresFailureExit,
 } from "../src/run-challenge.js";
+import type { RepairBrief } from "../src/repair.js";
 
 const temporaryDirectories: string[] = [];
 
@@ -34,7 +37,24 @@ describe("Pi launch", () => {
     expect(runRequiresFailureExit(0, "success", [])).toBe(false);
   });
 
-  it("uses separate deterministic planner and orchestrator profiles with thinking off", () => {
+  it("audits planner, generator, and repair streams in chronological phase order", async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), "agent-cofounder-audit-order-"));
+    temporaryDirectories.push(directory);
+    await Promise.all([
+      writeFile(path.join(directory, "planner.events.jsonl"), ""),
+      writeFile(path.join(directory, "orchestrator.events.jsonl"), ""),
+      writeFile(path.join(directory, "repair-02.events.jsonl"), ""),
+      writeFile(path.join(directory, "repair-01.events.jsonl"), ""),
+    ]);
+    expect((await listAuditEventFiles(directory)).map((file) => path.basename(file))).toEqual([
+      "planner.events.jsonl",
+      "orchestrator.events.jsonl",
+      "repair-01.events.jsonl",
+      "repair-02.events.jsonl",
+    ]);
+  });
+
+  it("uses isolated planner, generator, and repair profiles with thinking off", () => {
     const previousThinking = process.env.CHALLENGE_THINKING;
     delete process.env.CHALLENGE_THINKING;
     try {
@@ -46,7 +66,16 @@ describe("Pi launch", () => {
         "Journey guidance",
         "Stable app contract",
       );
-      for (const args of [planner, orchestrator]) {
+      const brief: RepairBrief = {
+        attempt: 1,
+        product: { name: "Tool", promise: "Help", audience: "One user", visual_direction: "Editorial" },
+        journeys: [{ id: "use", label: "Use tool", acceptance: "State updates" }],
+        invariants: ["State remains valid"],
+        failures: [{ check: "build", summary: "Build failed", excerpt: "src/App.tsx:1", implicated_files: ["src/App.tsx"] }],
+        candidate_files: [{ path: "src/App.tsx", responsibility: "Interface", owner: "experience" }],
+      };
+      const repair = buildRepairArguments(brief, "Repair prompt", "Stable app contract");
+      for (const args of [planner, orchestrator, repair]) {
         expect(args).toContain("--offline");
         expect(args).toContain("--no-context-files");
         expect(args).toContain("--print");
@@ -57,8 +86,11 @@ describe("Pi launch", () => {
       }
       expect(planner.at(-1)).toContain("Build a tool");
       expect(planner[planner.indexOf("--tools") + 1]).toBe("submit_app_schema");
-      expect(orchestrator[orchestrator.indexOf("--tools") + 1]).toContain("delegate_task");
+      expect(orchestrator[orchestrator.indexOf("--tools") + 1]).toBe("write");
       expect(orchestrator.at(-1)).toContain('{"version":1}');
+      expect(orchestrator.at(-1)).not.toContain("Build a tool");
+      expect(repair[repair.indexOf("--tools") + 1]).toBe("read,write,edit");
+      expect(repair.at(-1)).toContain('"candidate_files"');
     } finally {
       if (previousThinking === undefined) delete process.env.CHALLENGE_THINKING;
       else process.env.CHALLENGE_THINKING = previousThinking;
@@ -97,7 +129,7 @@ describe("Pi launch", () => {
       expect(plannerSystemPrompt).toContain(contractItem);
     }
     const orchestratorSystemPrompt = orchestrator[orchestrator.indexOf("--system-prompt") + 1] ?? "";
-    expect(orchestratorSystemPrompt).toContain("integrated application builder");
+    expect(orchestratorSystemPrompt).toContain("one-shot application generator");
     expect(orchestratorSystemPrompt).not.toContain(publicJourneys.trim());
   });
 

@@ -56,6 +56,7 @@ const usage: UsageSummary = {
 
 const verification: AppVerification = {
   passed: true,
+  failures: [],
   checks: [
     { command: "npm test", journey: "Automated tests", result: "passed" },
     { command: "npm run build", journey: "Production build", result: "passed" },

@@ -172,6 +172,7 @@ export function validateAppSchema(value: unknown): string[] {
     }
   }
 
+  const assignedFiles = new Set<string>();
   if (!Array.isArray(value.tasks) || value.tasks.length !== AGENT_ROLES.length) {
     errors.push(`tasks must contain exactly ${AGENT_ROLES.length} tasks`);
   } else {
@@ -193,6 +194,8 @@ export function validateAppSchema(value: unknown): string[] {
       if (stringArray(task.files, `${prefix}.files`, errors)) {
         for (const file of task.files) {
           if (!safeRelativeAppPath(file)) errors.push(`${prefix}.files contains an unsafe path: ${file}`);
+          if (assignedFiles.has(file)) errors.push(`${prefix}.files assigns ${file} more than once`);
+          assignedFiles.add(file);
           const owner = declaredOwners.get(file);
           if (owner === undefined) {
             errors.push(`${prefix} assigns ${file}, but architecture.files does not declare it`);
@@ -205,6 +208,9 @@ export function validateAppSchema(value: unknown): string[] {
     for (const role of AGENT_ROLES) {
       if (!assignedRoles.has(role)) errors.push(`tasks must include the ${role} role`);
     }
+    for (const file of declaredOwners.keys()) {
+      if (!assignedFiles.has(file)) errors.push(`architecture file ${file} is not assigned to a task`);
+    }
   }
 
   const quality = value.quality;
@@ -215,6 +221,13 @@ export function validateAppSchema(value: unknown): string[] {
     if (stringArray(quality.test_journeys, "quality.test_journeys", errors) && quality.test_journeys.length === 0) {
       errors.push("quality.test_journeys must not be empty");
     }
+  }
+
+  const qualityFiles = [...declaredOwners.entries()]
+    .filter(([, owner]) => owner === "quality")
+    .map(([file]) => file);
+  if (qualityFiles.length !== 1 || !/^src\/.+\.test\.tsx$/u.test(qualityFiles[0] ?? "")) {
+    errors.push("quality must own exactly one consolidated src/**/*.test.tsx file");
   }
 
   return errors;
