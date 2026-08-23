@@ -112,3 +112,7 @@ export function collectUsageFromJsonLines(content: string): UsageSummary {
     { ...ZERO_USAGE, call_log: [] },
   );
 }
+
+export function weightedTokenScore(usage: Pick<UsageSummary, "input_tokens" | "output_tokens" | "cache_read_tokens">): number {
+  return usage.input_tokens + 3 * usage.output_tokens + 0.1 * usage.cache_read_tokens;
+}

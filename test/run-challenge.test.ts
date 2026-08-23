@@ -7,7 +7,13 @@ import {
   PI_DOCUMENTATION_HEADING,
   stripPiDocumentationBlock,
 } from "../solution/extensions/protected-paths.js";
-import { buildPiArguments, parseArguments, runPi, runRequiresFailureExit } from "../src/run-challenge.js";
+import {
+  buildOrchestratorArguments,
+  buildPlannerArguments,
+  parseArguments,
+  runPi,
+  runRequiresFailureExit,
+} from "../src/run-challenge.js";
 
 const temporaryDirectories: string[] = [];
 
@@ -28,42 +34,52 @@ describe("Pi launch", () => {
     expect(runRequiresFailureExit(0, "success", [])).toBe(false);
   });
 
-  it("uses deterministic non-interactive flags and defaults thinking off", () => {
+  it("uses separate deterministic planner and orchestrator profiles with thinking off", () => {
     const previousThinking = process.env.CHALLENGE_THINKING;
     delete process.env.CHALLENGE_THINKING;
     try {
-      const args = buildPiArguments(
+      const planner = buildPlannerArguments("Build a tool", "Planner prompt", "Journey guidance");
+      const orchestrator = buildOrchestratorArguments(
         "Build a tool",
-        "Stable system prompt",
-        "Create, edit, delete, narrow, derive, and persist",
+        '{"version":1}',
+        "Orchestrator prompt",
+        "Journey guidance",
         "Stable app contract",
-        "/tmp/run",
       );
-      expect(args).toContain("--offline");
-      expect(args).toContain("--no-context-files");
-      expect(args).not.toContain("--print");
-      expect(args).not.toContain("--approve");
-      expect(args[args.indexOf("--thinking") + 1]).toBe("off");
-      expect(args).not.toContain("--system-prompt");
-      expect(args[args.indexOf("--append-system-prompt") + 1]).toContain("Stable app contract");
-      expect(args[args.indexOf("--append-system-prompt") + 1]).toContain(
-        "Create, edit, delete, narrow, derive, and persist",
-      );
-      expect(args.at(-1)).toContain("Build a tool");
+      for (const args of [planner, orchestrator]) {
+        expect(args).toContain("--offline");
+        expect(args).toContain("--no-context-files");
+        expect(args).toContain("--print");
+        expect(args).not.toContain("--approve");
+        expect(args[args.indexOf("--thinking") + 1]).toBe("off");
+        expect(args).toContain("--system-prompt");
+        expect(args).not.toContain("--append-system-prompt");
+      }
+      expect(planner.at(-1)).toContain("Build a tool");
+      expect(planner[planner.indexOf("--tools") + 1]).toBe("submit_app_schema");
+      expect(orchestrator[orchestrator.indexOf("--tools") + 1]).toContain("delegate_task");
+      expect(orchestrator.at(-1)).toContain('{"version":1}');
     } finally {
       if (previousThinking === undefined) delete process.env.CHALLENGE_THINKING;
       else process.env.CHALLENGE_THINKING = previousThinking;
     }
   });
 
-  it("appends structurally consistent public journey guidance to Pi's built-in system prompt", async () => {
-    const [systemPrompt, publicJourneys, appContext] = await Promise.all([
-      readFile(path.resolve("solution/system-prompt.md"), "utf8"),
+  it("supplies public journeys to the planner and keeps the execution prompt minimal", async () => {
+    const [plannerPrompt, orchestratorPrompt, publicJourneys, appContext] = await Promise.all([
+      readFile(path.resolve("solution/planner/system-prompt.md"), "utf8"),
+      readFile(path.resolve("solution/orchestrator/system-prompt.md"), "utf8"),
       readFile(path.resolve("contract-public/journeys.md"), "utf8"),
       readFile(path.resolve("app-template/AGENTS.md"), "utf8"),
     ]);
-    const args = buildPiArguments("Build a tool", systemPrompt, publicJourneys, appContext, "/tmp/run");
-    const suppliedSystemPrompt = args[args.indexOf("--append-system-prompt") + 1] ?? "";
+    const planner = buildPlannerArguments("Build a tool", plannerPrompt, publicJourneys);
+    const orchestrator = buildOrchestratorArguments(
+      "Build a tool",
+      '{"version":1}',
+      orchestratorPrompt,
+      publicJourneys,
+      appContext,
+    );
     const behaviorSection = /## Behaviors to implement and test when implied\s+([\s\S]*?)\n## /u.exec(
       publicJourneys,
     )?.[1];
@@ -73,16 +89,16 @@ describe("Pi launch", () => {
       (match) => match[1],
     );
 
-    expect(suppliedSystemPrompt).toContain(publicJourneys.trim());
     expect(behaviorItems.length).toBeGreaterThan(0);
     expect(requirementItems.length).toBeGreaterThan(0);
+    const plannerSystemPrompt = planner[planner.indexOf("--system-prompt") + 1] ?? "";
+    expect(plannerSystemPrompt).toContain(publicJourneys.trim());
     for (const contractItem of [...behaviorItems, ...requirementItems]) {
-      expect(suppliedSystemPrompt).toContain(contractItem);
+      expect(plannerSystemPrompt).toContain(contractItem);
     }
-    expect(suppliedSystemPrompt).toContain("omit it instead of inventing an equivalent feature");
-    expect(suppliedSystemPrompt).toContain("Never omit an implied journey merely to simplify");
-    expect(suppliedSystemPrompt.match(/^# Generated application contract$/gmu)).toHaveLength(1);
-    expect(suppliedSystemPrompt).not.toMatch(/^## Generated application contract$/mu);
+    const orchestratorSystemPrompt = orchestrator[orchestrator.indexOf("--system-prompt") + 1] ?? "";
+    expect(orchestratorSystemPrompt).toContain("integrated application builder");
+    expect(orchestratorSystemPrompt).not.toContain(publicJourneys.trim());
   });
 
   it("removes only Pi's documentation block from the composed system prompt", () => {

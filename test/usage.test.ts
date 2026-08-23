@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { collectUsageFromJsonLines } from "../src/usage.js";
+import { collectUsageFromJsonLines, weightedTokenScore } from "../src/usage.js";
 
 describe("collectUsageFromJsonLines", () => {
   it("aggregates completed assistant messages without counting other events", () => {
@@ -129,5 +129,11 @@ describe("collectUsageFromJsonLines", () => {
       total_tokens: 0,
       call_log: [],
     });
+  });
+
+  it("calculates the official weighted competition score", () => {
+    expect(weightedTokenScore({ input_tokens: 10_722, output_tokens: 12_541, cache_read_tokens: 491_008 })).toBe(
+      97_445.8,
+    );
   });
 });
