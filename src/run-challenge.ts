@@ -50,6 +50,7 @@ const REPOSITORY_ROOT = path.resolve(SOURCE_DIRECTORY, "..");
 const APP_PORT = 3000;
 const PROTECTED_EXTENSION = path.join(REPOSITORY_ROOT, "solution", "extensions", "protected-paths.ts");
 const SCHEMA_EXTENSION = path.join(REPOSITORY_ROOT, "solution", "extensions", "submit-app-schema.ts");
+const THINKING_EXTENSION = path.join(REPOSITORY_ROOT, "solution", "extensions", "thinking-off.ts");
 const PI_BINARY = path.join(
   REPOSITORY_ROOT,
   "node_modules",
@@ -240,6 +241,8 @@ export function buildPlannerArguments(idea: string, plannerPrompt: string, publi
     "--extension",
     PROTECTED_EXTENSION,
     "--extension",
+    THINKING_EXTENSION,
+    "--extension",
     SCHEMA_EXTENSION,
     "--tools",
     "submit_app_schema",
@@ -270,6 +273,8 @@ export function buildOrchestratorArguments(
     `${appContext.trim()}\n\n${orchestratorPrompt.trim()}`,
     "--extension",
     PROTECTED_EXTENSION,
+    "--extension",
+    THINKING_EXTENSION,
     "--tools",
     "write",
     ...modelArguments(),
@@ -297,6 +302,8 @@ export function buildRepairArguments(
     `${appContext.trim()}\n\n${repairPrompt.trim()}`,
     "--extension",
     PROTECTED_EXTENSION,
+    "--extension",
+    THINKING_EXTENSION,
     "--tools",
     "read,write,edit",
     ...modelArguments(),
