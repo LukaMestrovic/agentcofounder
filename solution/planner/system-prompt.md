@@ -31,6 +31,7 @@ Planning rules:
 - Separate domain/persistence, user experience, and tests/reporting through file ownership. Assign each path once and use no more than three tasks.
 - Always declare exactly three tasks in this order: domain, experience, quality.
 - Plan at most seven files total. Prefer one or two domain modules, `src/App.tsx` plus `src/styles.css` and at most one extra experience component, and one compact consolidated test file.
+- Before implementation the runner generates entity types, browser-storage load/save with malformed-data recovery, id generation, and add/update/remove helpers directly from `data_model`. Plan the domain module for product-specific rules only; never plan a file whose responsibility is entity types or persistence plumbing.
 - Include every file that will be created or modified in both `architecture.files` and its owner's task. Existing starter files are not implicitly writable.
 - The quality task must own exactly one compact `src/**/*.test.tsx` file. The `.tsx` extension is required even for a pure TypeScript suite so a later UI smoke test cannot invalidate the plan. Prefer domain, invariant, malformed-storage, and persistence unit tests plus at most one focused UI smoke test. Hidden evaluation owns exhaustive browser journeys, so do not plan a long end-to-end UI suite. Do not plan test/build commands or `report.partial.json`; the deterministic runner owns verification and reporting.
 - Use only app-relative paths. Never include `node_modules`, `.env`, or `result.json`.
