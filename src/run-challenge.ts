@@ -13,12 +13,6 @@ import {
 } from "./finalize-generated-app.js";
 import { handoffToSupportedNode } from "./node-runtime.js";
 import { prepareOutput } from "./prepare-output.js";
-import {
-  scaffoldApiSummary,
-  scaffoldDataLayer,
-  writeScaffoldFile,
-  type ScaffoldFile,
-} from "./scaffold-data-layer.js";
 import { buildRepairBrief, type RepairBrief } from "./repair.js";
 import { auditAppPortAfterPi } from "./port-owner.js";
 import { signalProcessTree, terminateProcessTree, usesDetachedProcessGroup } from "./process-tree.js";
@@ -56,7 +50,6 @@ const REPOSITORY_ROOT = path.resolve(SOURCE_DIRECTORY, "..");
 const APP_PORT = 3000;
 const PROTECTED_EXTENSION = path.join(REPOSITORY_ROOT, "solution", "extensions", "protected-paths.ts");
 const SCHEMA_EXTENSION = path.join(REPOSITORY_ROOT, "solution", "extensions", "submit-app-schema.ts");
-const THINKING_EXTENSION = path.join(REPOSITORY_ROOT, "solution", "extensions", "thinking-off.ts");
 const PI_BINARY = path.join(
   REPOSITORY_ROOT,
   "node_modules",
@@ -247,8 +240,6 @@ export function buildPlannerArguments(idea: string, plannerPrompt: string, publi
     "--extension",
     PROTECTED_EXTENSION,
     "--extension",
-    THINKING_EXTENSION,
-    "--extension",
     SCHEMA_EXTENSION,
     "--tools",
     "submit_app_schema",
@@ -279,8 +270,6 @@ export function buildOrchestratorArguments(
     `${appContext.trim()}\n\n${orchestratorPrompt.trim()}`,
     "--extension",
     PROTECTED_EXTENSION,
-    "--extension",
-    THINKING_EXTENSION,
     "--tools",
     "write",
     ...modelArguments(),
@@ -308,8 +297,6 @@ export function buildRepairArguments(
     `${appContext.trim()}\n\n${repairPrompt.trim()}`,
     "--extension",
     PROTECTED_EXTENSION,
-    "--extension",
-    THINKING_EXTENSION,
     "--tools",
     "read,write,edit",
     ...modelArguments(),
@@ -450,29 +437,13 @@ async function main(): Promise<void> {
     }
   }
 
-  // Types, storage access, and record CRUD follow mechanically from the validated schema.
-  // Generating them here keeps them out of the model's output tokens, which cost three times
-  // an input token, and makes malformed-storage recovery correct by construction.
-  let scaffold: ScaffoldFile | undefined;
-  let generationContext = appContext;
-  if (validatedSchema) {
-    scaffold = scaffoldDataLayer(validatedSchema);
-    if (scaffold) {
-      await writeScaffoldFile(outputDirectory, scaffold);
-      generationContext = `${appContext.trim()}\n\n${scaffoldApiSummary(validatedSchema, scaffold)}`;
-      console.log(`Generated the deterministic data layer: ${scaffold.path}`);
-    } else {
-      console.log("This idea does not use a persisted record collection; no data layer was generated.");
-    }
-  }
-
   const plannerUsage = collectUsageFromJsonLines(
     await readFile(path.join(artifactDirectory, "planner.events.jsonl"), "utf8"),
   );
   if (schemaJson && plannerUsage.cost_total < experimentBudget) {
     console.log("Generating the validated application in one isolated phase...");
     orchestrator = await runPi(
-      buildOrchestratorArguments(idea, schemaJson, orchestratorPrompt, publicJourneys, generationContext),
+      buildOrchestratorArguments(idea, schemaJson, orchestratorPrompt, publicJourneys, appContext),
       outputDirectory,
       path.join(artifactDirectory, "orchestrator.events.jsonl"),
       path.join(artifactDirectory, "orchestrator.stderr.log"),
@@ -554,7 +525,7 @@ async function main(): Promise<void> {
       const repairAttempt = (verificationAttempt + 1) as 1 | 2;
       const brief = buildRepairBrief(validatedSchema, verification, repairAttempt);
       const repair = await runPi(
-        buildRepairArguments(brief, repairPrompt, generationContext),
+        buildRepairArguments(brief, repairPrompt, appContext),
         outputDirectory,
         path.join(artifactDirectory, `repair-${String(repairAttempt).padStart(2, "0")}.events.jsonl`),
         path.join(artifactDirectory, `repair-${String(repairAttempt).padStart(2, "0")}.stderr.log`),
