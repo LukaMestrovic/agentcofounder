@@ -16,6 +16,7 @@ import { prepareOutput } from "./prepare-output.js";
 import {
   scaffoldApiSummary,
   scaffoldDataLayer,
+  scaffoldDataLayerTests,
   writeScaffoldFile,
   type ScaffoldFile,
 } from "./scaffold-data-layer.js";
@@ -459,8 +460,11 @@ async function main(): Promise<void> {
     scaffold = scaffoldDataLayer(validatedSchema);
     if (scaffold) {
       await writeScaffoldFile(outputDirectory, scaffold);
-      generationContext = `${appContext.trim()}\n\n${scaffoldApiSummary(validatedSchema, scaffold)}`;
+      const scaffoldTests = scaffoldDataLayerTests(validatedSchema, scaffold);
+      if (scaffoldTests) await writeScaffoldFile(outputDirectory, scaffoldTests);
+      generationContext = `${appContext.trim()}\n\n${scaffoldApiSummary(validatedSchema, scaffold, scaffoldTests)}`;
       console.log(`Generated the deterministic data layer: ${scaffold.path}`);
+      if (scaffoldTests) console.log(`Generated deterministic data-layer tests: ${scaffoldTests.path}`);
     } else {
       console.log("This idea does not use a persisted record collection; no data layer was generated.");
     }

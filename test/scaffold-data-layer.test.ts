@@ -4,6 +4,7 @@ import {
   SCAFFOLD_PATH,
   scaffoldApiSummary,
   scaffoldDataLayer,
+  scaffoldDataLayerTests,
   scaffoldPath,
 } from "../src/scaffold-data-layer.js";
 
@@ -71,5 +72,42 @@ describe("data layer scaffolding", () => {
     expect(summary).toContain("src/store.ts");
     expect(summary).toContain('category: "novel" | "cookbook"');
     expect(summary).toContain("- loadBooks(): Book[]");
+  });
+});
+
+describe("data layer test scaffolding", () => {
+  it("derives a passing store test that imports the generated helpers", () => {
+    const schema = schemaWith({});
+    const store = scaffoldDataLayer(schema)!;
+    const tests = scaffoldDataLayerTests(schema, store);
+    expect(tests?.path).toBe("src/store.test.ts");
+    const contents = tests?.contents ?? "";
+    expect(contents).toContain('} from "./store";');
+    expect(contents).toContain("beforeEach(() => {");
+    expect(contents).toContain("localStorage.clear();");
+    expect(contents).toContain('describe("Book store"');
+    for (const helper of ["addBook", "updateBook", "removeBook", "isBook", "loadBooks", "saveBooks"]) {
+      expect(contents).toContain(helper);
+    }
+    expect(contents).toContain("bookCategoryOptions[0]");
+  });
+
+  it("follows the store path fallback and skips non-persistent ideas", () => {
+    const schema = schemaWith({}, [
+      { path: "src/store.ts", responsibility: "r", owner: "domain" },
+      { path: "src/App.tsx", responsibility: "r", owner: "experience" },
+    ]);
+    const store = scaffoldDataLayer(schema)!;
+    expect(scaffoldDataLayerTests(schema, store)?.path).toBe("src/data-store.test.ts");
+    expect(scaffoldDataLayerTests(schemaWith({ persistence: "in-memory session state only" }), store)).toBeUndefined();
+  });
+
+  it("notes the generated tests in the API summary so the generator writes only a UI smoke test", () => {
+    const schema = schemaWith({});
+    const store = scaffoldDataLayer(schema)!;
+    const tests = scaffoldDataLayerTests(schema, store)!;
+    const summary = scaffoldApiSummary(schema, store, tests);
+    expect(summary).toContain("src/store.test.ts");
+    expect(summary).toContain("single focused UI smoke test");
   });
 });
