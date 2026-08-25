@@ -1,4 +1,6 @@
 {
+  "run_id": "2026-08-21T06-13-25-971Z",
+  "weighted_score": 45688.4,
   "status": "success",
   "app_url": "http://localhost:3000",
   "start_command": "npm --prefix 'output/app' run dev",

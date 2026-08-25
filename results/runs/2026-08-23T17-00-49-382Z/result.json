@@ -1,7 +1,9 @@
 {
+  "run_id": "2026-08-23T17-00-49-382Z",
+  "weighted_score": 71319.4,
   "status": "success",
   "app_url": "http://localhost:3000",
-  "start_command": "npm --prefix 'output/tournament-current-full' run dev",
+  "start_command": "npm --prefix '../../../output/tournament-current-full' run dev",
   "summary": "Round Robin Tournament: A single offline page to run a round-robin tabletop tournament: register players, auto-generate a conflict-free schedule, enter scores, and see live standings — all saved in your browser.",
   "implemented_features": [
     "Create tournament & manage players",

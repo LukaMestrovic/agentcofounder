@@ -1,0 +1,257 @@
+{
+  "run_id": "2026-08-23T16-31-05-560Z",
+  "weighted_score": 91557.2,
+  "status": "failed",
+  "app_url": "http://localhost:3000",
+  "start_command": "npm --prefix '../../../output/tournament-baseline' run dev",
+  "summary": "The harness did not produce a valid report.partial.json file.",
+  "implemented_features": [],
+  "assumptions": [],
+  "tests_run": [],
+  "harness_checks": [
+    {
+      "command": "vitest run",
+      "journey": "App tests were not run: Pi did not complete with audited model usage",
+      "result": "failed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "Production build was not run: Pi did not complete with audited model usage",
+      "result": "failed"
+    },
+    {
+      "command": "npm run dev",
+      "journey": "HTTP startup probe was not run: Pi did not complete with audited model usage",
+      "result": "failed"
+    }
+  ],
+  "model_calls": 19,
+  "input_tokens": 7472,
+  "output_tokens": 19510,
+  "cache_read_tokens": 255552,
+  "cache_write_tokens": 0,
+  "total_tokens": 282534,
+  "reasoning_tokens": 0,
+  "cost_total": 0.04649199999999999,
+  "call_log": [
+    {
+      "index": 1,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1890,
+      "output_tokens": 106,
+      "cache_read_tokens": 704,
+      "cache_write_tokens": 0,
+      "total_tokens": 2700,
+      "reasoning_tokens": 0,
+      "cost_total": 0.002102
+    },
+    {
+      "index": 2,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1586,
+      "output_tokens": 72,
+      "cache_read_tokens": 2688,
+      "cache_write_tokens": 0,
+      "total_tokens": 4346,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00173
+    },
+    {
+      "index": 3,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 534,
+      "output_tokens": 59,
+      "cache_read_tokens": 4288,
+      "cache_write_tokens": 0,
+      "total_tokens": 4881,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000652
+    },
+    {
+      "index": 4,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 625,
+      "output_tokens": 3141,
+      "cache_read_tokens": 4864,
+      "cache_write_tokens": 0,
+      "total_tokens": 8630,
+      "reasoning_tokens": 0,
+      "cost_total": 0.006906999999999999
+    },
+    {
+      "index": 5,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 85,
+      "output_tokens": 264,
+      "cache_read_tokens": 8576,
+      "cache_write_tokens": 0,
+      "total_tokens": 8925,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0006129999999999999
+    },
+    {
+      "index": 6,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 60,
+      "output_tokens": 82,
+      "cache_read_tokens": 8896,
+      "cache_write_tokens": 0,
+      "total_tokens": 9038,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000224
+    },
+    {
+      "index": 7,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 47,
+      "output_tokens": 836,
+      "cache_read_tokens": 9024,
+      "cache_write_tokens": 0,
+      "total_tokens": 9907,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0017189999999999998
+    },
+    {
+      "index": 8,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 85,
+      "output_tokens": 1383,
+      "cache_read_tokens": 9856,
+      "cache_write_tokens": 0,
+      "total_tokens": 11324,
+      "reasoning_tokens": 0,
+      "cost_total": 0.002851
+    },
+    {
+      "index": 9,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 95,
+      "output_tokens": 1462,
+      "cache_read_tokens": 11264,
+      "cache_write_tokens": 0,
+      "total_tokens": 12821,
+      "reasoning_tokens": 0,
+      "cost_total": 0.003019
+    },
+    {
+      "index": 10,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 56,
+      "output_tokens": 556,
+      "cache_read_tokens": 12800,
+      "cache_write_tokens": 0,
+      "total_tokens": 13412,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001168
+    },
+    {
+      "index": 11,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 70,
+      "output_tokens": 946,
+      "cache_read_tokens": 13376,
+      "cache_write_tokens": 0,
+      "total_tokens": 14392,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001962
+    },
+    {
+      "index": 12,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 89,
+      "output_tokens": 2088,
+      "cache_read_tokens": 14336,
+      "cache_write_tokens": 0,
+      "total_tokens": 16513,
+      "reasoning_tokens": 0,
+      "cost_total": 0.004265
+    },
+    {
+      "index": 13,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 33,
+      "output_tokens": 4112,
+      "cache_read_tokens": 16512,
+      "cache_write_tokens": 0,
+      "total_tokens": 20657,
+      "reasoning_tokens": 0,
+      "cost_total": 0.008257
+    },
+    {
+      "index": 14,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 81,
+      "output_tokens": 62,
+      "cache_read_tokens": 20608,
+      "cache_write_tokens": 0,
+      "total_tokens": 20751,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000205
+    },
+    {
+      "index": 15,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 951,
+      "output_tokens": 859,
+      "cache_read_tokens": 20736,
+      "cache_write_tokens": 0,
+      "total_tokens": 22546,
+      "reasoning_tokens": 0,
+      "cost_total": 0.002669
+    },
+    {
+      "index": 16,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 51,
+      "output_tokens": 44,
+      "cache_read_tokens": 22528,
+      "cache_write_tokens": 0,
+      "total_tokens": 22623,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000139
+    },
+    {
+      "index": 17,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 125,
+      "output_tokens": 3253,
+      "cache_read_tokens": 22592,
+      "cache_write_tokens": 0,
+      "total_tokens": 25970,
+      "reasoning_tokens": 0,
+      "cost_total": 0.006631
+    },
+    {
+      "index": 18,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 83,
+      "output_tokens": 45,
+      "cache_read_tokens": 25920,
+      "cache_write_tokens": 0,
+      "total_tokens": 26048,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00017299999999999998
+    },
+    {
+      "index": 19,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 926,
+      "output_tokens": 140,
+      "cache_read_tokens": 25984,
+      "cache_write_tokens": 0,
+      "total_tokens": 27050,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001206
+    }
+  ],
+  "pi_exit_code": 124,
+  "telemetry_source": "pi-json-event-stream",
+  "port_reclamation": {
+    "preexisting_listener": false,
+    "listener_after_pi": false,
+    "attempted": false,
+    "reclaimed": false,
+    "process_ids": [],
+    "diagnostic": "Port 3000 remained free after Pi"
+  }
+}

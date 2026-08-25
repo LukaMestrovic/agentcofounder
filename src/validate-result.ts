@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Ajv, type ErrorObject } from "ajv";
 import type { RunResult } from "./types.js";
+import { weightedTokenScore } from "./usage.js";
 
 const SOURCE_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
 const REPOSITORY_ROOT = path.resolve(SOURCE_DIRECTORY, "..");
@@ -26,6 +27,9 @@ export async function validateResultObject(value: unknown): Promise<string[]> {
 
   const result = value as RunResult;
   const errors: string[] = [];
+  if (!sameNumber(result.weighted_score, weightedTokenScore(result))) {
+    errors.push("weighted_score does not match the competition formula");
+  }
   if (result.status !== "failed" && result.model_calls === 0) {
     errors.push("non-failed result must include at least one model call");
   }

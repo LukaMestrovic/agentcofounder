@@ -4,6 +4,8 @@
   "type": "object",
   "additionalProperties": true,
   "required": [
+    "run_id",
+    "weighted_score",
     "status",
     "app_url",
     "start_command",
@@ -46,6 +48,11 @@
     }
   ],
   "properties": {
+    "run_id": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{3}Z$"
+    },
+    "weighted_score": { "type": "number", "minimum": 0 },
     "status": { "enum": ["success", "partial", "failed"] },
     "app_url": { "const": "http://localhost:3000" },
     "start_command": { "type": "string", "minLength": 1 },

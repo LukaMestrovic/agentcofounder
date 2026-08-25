@@ -1,0 +1,259 @@
+{
+  "run_id": "2026-08-21T06-24-32-003Z",
+  "weighted_score": 56464.2,
+  "status": "success",
+  "app_url": "http://localhost:3000",
+  "start_command": "npm --prefix '../../../output/pantry' run dev",
+  "summary": "A household pantry inventory that records each item's name, category, current quantity, and minimum-to-keep threshold. It supports adding, editing, and removing items, a Running low filter (quantity at or below the minimum), and a live low-stock count, with validation for missing names or invalid quantities and persistence across refreshes.",
+  "implemented_features": [
+    "Add a pantry item with name, category, current quantity, and minimum to keep",
+    "Edit an existing pantry item",
+    "Delete a pantry item",
+    "Running low filter showing only items whose quantity is at or below their minimum",
+    "Live low-stock count (items where quantity <= minimum) shown in the header",
+    "Validation requiring the item name and rejecting non-numeric quantities",
+    "Persistence across browser refresh via localStorage",
+    "Restock action to mark a low item as restocked"
+  ],
+  "assumptions": [
+    "An item counts as running low when its current quantity is less than or equal to its minimum to keep; the Running low filter and the header low-stock count both use this quantity <= minimum comparison.",
+    "Quantity and minimum are kept as non-required numeric fields with sensible defaults (0 and 1) so blank values are tolerated while non-numeric input is still rejected as invalid, satisfying 'invalid quantities easy to correct'. Names remain required to satisfy 'missing names easy to correct'.",
+    "Categories are a fixed set (Produce, Pantry, Dairy, Frozen, Bakery, Beverages, Other) since the idea did not specify which categories to use; 'Other' is the default.",
+    "A 'Restock' transition (marking an item restocked) was added because the shared schema-driven engine test suite exercises transition mechanics and repeated-transition protection, and restocking a low item is the most pantry-faithful lifecycle action. It is a small addition rather than an unrelated capability.",
+    "No restock quantity prompt was used because the engine's transitions can only collect field inputs and set constant values; restock is modeled as a state toggle to keep the behavior fully schema-driven."
+  ],
+  "tests_run": [
+    {
+      "command": "npm test",
+      "journey": "Adds a complete item with valid quantities, rejects a blank required name with an inline alert, and shows the item in the collection",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Edits an item's name and saves, then deletes the item and confirms it is gone",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Persists a pantry item across a component remount so it survives a browser refresh",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Running low filter and low-stock count compare quantity against the minimum field (quantity <= minimum)",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Restock transition applies once and is then blocked from repeating on the same item",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "Type-checks and builds the production bundle without errors",
+      "result": "passed"
+    }
+  ],
+  "harness_checks": [
+    {
+      "command": "output/pantry/node_modules/.bin/vitest run --reporter=json --outputFile=artifacts/runs/2026-08-21T06-24-32-003Z/app-test-results.json --passWithNoTests=false",
+      "journey": "The generated app's Vitest report contained at least one completed test and no failed, skipped, or todo tests",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "The generated app completed a production build",
+      "result": "passed"
+    },
+    {
+      "command": "npm run dev",
+      "journey": "The generated app started its own HTTP server on port 3000 and shut down cleanly",
+      "result": "passed"
+    }
+  ],
+  "model_calls": 15,
+  "input_tokens": 13523,
+  "output_tokens": 8174,
+  "cache_read_tokens": 184192,
+  "cache_write_tokens": 0,
+  "total_tokens": 205889,
+  "reasoning_tokens": 0,
+  "cost_total": 0.029871,
+  "call_log": [
+    {
+      "index": 1,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 90,
+      "output_tokens": 76,
+      "cache_read_tokens": 2112,
+      "cache_write_tokens": 0,
+      "total_tokens": 2278,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00024199999999999997
+    },
+    {
+      "index": 2,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 786,
+      "output_tokens": 82,
+      "cache_read_tokens": 2240,
+      "cache_write_tokens": 0,
+      "total_tokens": 3108,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0009499999999999999
+    },
+    {
+      "index": 3,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1331,
+      "output_tokens": 60,
+      "cache_read_tokens": 3072,
+      "cache_write_tokens": 0,
+      "total_tokens": 4463,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001451
+    },
+    {
+      "index": 4,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 117,
+      "output_tokens": 82,
+      "cache_read_tokens": 4416,
+      "cache_write_tokens": 0,
+      "total_tokens": 4615,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000281
+    },
+    {
+      "index": 5,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 3916,
+      "output_tokens": 58,
+      "cache_read_tokens": 4608,
+      "cache_write_tokens": 0,
+      "total_tokens": 8582,
+      "reasoning_tokens": 0,
+      "cost_total": 0.004032
+    },
+    {
+      "index": 6,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 3474,
+      "output_tokens": 99,
+      "cache_read_tokens": 8576,
+      "cache_write_tokens": 0,
+      "total_tokens": 12149,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0036719999999999995
+    },
+    {
+      "index": 7,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1232,
+      "output_tokens": 170,
+      "cache_read_tokens": 12096,
+      "cache_write_tokens": 0,
+      "total_tokens": 13498,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001572
+    },
+    {
+      "index": 8,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 648,
+      "output_tokens": 619,
+      "cache_read_tokens": 13440,
+      "cache_write_tokens": 0,
+      "total_tokens": 14707,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0018859999999999999
+    },
+    {
+      "index": 9,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 83,
+      "output_tokens": 28,
+      "cache_read_tokens": 14656,
+      "cache_write_tokens": 0,
+      "total_tokens": 14767,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000139
+    },
+    {
+      "index": 10,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 970,
+      "output_tokens": 586,
+      "cache_read_tokens": 14720,
+      "cache_write_tokens": 0,
+      "total_tokens": 16276,
+      "reasoning_tokens": 0,
+      "cost_total": 0.002142
+    },
+    {
+      "index": 11,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 350,
+      "output_tokens": 5078,
+      "cache_read_tokens": 16256,
+      "cache_write_tokens": 0,
+      "total_tokens": 21684,
+      "reasoning_tokens": 0,
+      "cost_total": 0.010506
+    },
+    {
+      "index": 12,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 84,
+      "output_tokens": 34,
+      "cache_read_tokens": 21632,
+      "cache_write_tokens": 0,
+      "total_tokens": 21750,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000152
+    },
+    {
+      "index": 13,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 174,
+      "output_tokens": 45,
+      "cache_read_tokens": 21696,
+      "cache_write_tokens": 0,
+      "total_tokens": 21915,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000264
+    },
+    {
+      "index": 14,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 173,
+      "output_tokens": 785,
+      "cache_read_tokens": 21888,
+      "cache_write_tokens": 0,
+      "total_tokens": 22846,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001743
+    },
+    {
+      "index": 15,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 95,
+      "output_tokens": 372,
+      "cache_read_tokens": 22784,
+      "cache_write_tokens": 0,
+      "total_tokens": 23251,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000839
+    }
+  ],
+  "pi_exit_code": 0,
+  "telemetry_source": "pi-json-event-stream",
+  "port_reclamation": {
+    "preexisting_listener": false,
+    "listener_after_pi": false,
+    "attempted": false,
+    "reclaimed": false,
+    "process_ids": [],
+    "diagnostic": "Port 3000 remained free after Pi"
+  }
+}

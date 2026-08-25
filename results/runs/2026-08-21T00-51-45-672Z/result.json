@@ -1,0 +1,580 @@
+{
+  "run_id": "2026-08-21T00-51-45-672Z",
+  "weighted_score": 165676.4,
+  "status": "success",
+  "app_url": "http://localhost:3000",
+  "start_command": "npm --prefix '../../../output/evaluation/2026-08-20T23-47-34-450Z/collections/baseline' run dev",
+  "summary": "A personal Vinyl Record Collection Tracker. Each record has Title, Artist, Genre (Jazz/Rock/Classical dropdown), Estimated value (numeric EUR), and Status (defaults to Wishlist). Users can add, edit, delete records; acquire (Wishlist->Owned) and move to wishlist (Owned->Wishlist); filter by All/Wishlist/Owned; and see the summed Owned collection value in EUR. All data persists to localStorage and survives refreshes, with input validation and recovery from malformed stored data.",
+  "implemented_features": [
+    "Add a record with Title, Artist, Genre (dropdown), Estimated value (numeric); default status Wishlist",
+    "Edit an existing record and reflect changes in the list",
+    "Cancel an edit without persisting changes",
+    "Delete a record",
+    "Acquire flips a record from Wishlist to Owned (no-op on Owned)",
+    "Move to wishlist flips an Owned record back to Wishlist (no-op on Wishlist)",
+    "Validate input (required title/artist, valid genre, non-negative numeric value) with accessible per-field errors",
+    "Filter the collection by All, Wishlist, or Owned",
+    "Show summed Owned collection value in EUR with a live summary",
+    "Persist records across browser refresh via localStorage",
+    "Recover gracefully from malformed persisted data and deduplicate records by id",
+    "Responsive, accessible UI with empty states and semantic controls"
+  ],
+  "assumptions": [
+    "The idea lists Wishlist and Owned as Status values and that Status defaults to Wishlist; 'Acquire' and 'Move to wishlist' are the only status transitions, so the status is a two-state toggle rather than a free-text field. No other statuses were invented.",
+    "The idea does not mandate confirmation dialogs for delete; the delete action is immediate to keep the journey minimal. Added no extra delete-confirmation requirement.",
+    "Estimated value currency is EUR per the requirement; the value is stored as a number and displayed with EUR formatting. No currency conversion or multi-currency support was added since the idea scopes it to EUR.",
+    "Filtering is limited to Wishlist (and All/Owned) as the idea specifies filtering to Wishlist; an 'All' view and an 'Owned' view were added so the filter is meaningful and reversible, consistent with the listed Status values.",
+    "Persistence uses browser localStorage (single-user, no backend implied by the idea). Persistence is isolated behind a repository boundary so another client could replace it without UI changes.",
+    "The idea does not request search/sort/export, so those features were omitted to keep the app minimal.",
+    "Domain type named Vinyl (instead of Record) to avoid colliding with TypeScript's built-in Record<K,V> utility type; the user-facing label remains 'Record'."
+  ],
+  "tests_run": [
+    {
+      "command": "npm test",
+      "journey": "Add a record and see it in the list with the default Wishlist status",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Validate input: invalid/empty fields are blocked with per-field errors, then corrected input succeeds",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Empty estimated value is rejected and no record is added",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Edit an existing record and see the changes reflected (form returns to add mode)",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Cancel editing without changing the record",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Delete a record and see the empty state",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Acquire flips Wishlist to Owned; Move to wishlist reverses it",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Filter the collection to Wishlist and switch back to All",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Summed Owned collection value in EUR updates as records are acquired",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Records persist across a simulated refresh via localStorage",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Two records with identical details can both be added (deduplication is by id, not content)",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Acquiring an already-owned record is a no-op (no double counting of value)",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Malformed persisted data is recovered: valid records kept, junk dropped, defaults applied",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Domain unit tests: validation, status transitions, derived value summing, EUR formatting, filtering, and malformed-data sanitization",
+      "result": "passed"
+    }
+  ],
+  "harness_checks": [
+    {
+      "command": "output/evaluation/2026-08-20T23-47-34-450Z/collections/baseline/node_modules/.bin/vitest run --reporter=json --outputFile=artifacts/runs/2026-08-21T00-51-45-672Z/app-test-results.json --passWithNoTests=false",
+      "journey": "The generated app's Vitest report contained at least one completed test and no failed, skipped, or todo tests",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "The generated app completed a production build",
+      "result": "passed"
+    },
+    {
+      "command": "npm run dev",
+      "journey": "The generated app started its own HTTP server on port 3000 and shut down cleanly",
+      "result": "passed"
+    }
+  ],
+  "model_calls": 40,
+  "input_tokens": 10147,
+  "output_tokens": 22081,
+  "cache_read_tokens": 892864,
+  "cache_write_tokens": 0,
+  "total_tokens": 925092,
+  "reasoning_tokens": 0,
+  "cost_total": 0.054308999999999996,
+  "call_log": [
+    {
+      "index": 1,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 163,
+      "output_tokens": 95,
+      "cache_read_tokens": 2112,
+      "cache_write_tokens": 0,
+      "total_tokens": 2370,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000353
+    },
+    {
+      "index": 2,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 919,
+      "output_tokens": 328,
+      "cache_read_tokens": 2368,
+      "cache_write_tokens": 0,
+      "total_tokens": 3615,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001575
+    },
+    {
+      "index": 3,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1443,
+      "output_tokens": 188,
+      "cache_read_tokens": 3584,
+      "cache_write_tokens": 0,
+      "total_tokens": 5215,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0018189999999999999
+    },
+    {
+      "index": 4,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 595,
+      "output_tokens": 2533,
+      "cache_read_tokens": 5184,
+      "cache_write_tokens": 0,
+      "total_tokens": 8312,
+      "reasoning_tokens": 0,
+      "cost_total": 0.005661
+    },
+    {
+      "index": 5,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 157,
+      "output_tokens": 1883,
+      "cache_read_tokens": 8256,
+      "cache_write_tokens": 0,
+      "total_tokens": 10296,
+      "reasoning_tokens": 0,
+      "cost_total": 0.003922999999999999
+    },
+    {
+      "index": 6,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 161,
+      "output_tokens": 905,
+      "cache_read_tokens": 10240,
+      "cache_write_tokens": 0,
+      "total_tokens": 11306,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001971
+    },
+    {
+      "index": 7,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 95,
+      "output_tokens": 1871,
+      "cache_read_tokens": 11264,
+      "cache_write_tokens": 0,
+      "total_tokens": 13230,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0038369999999999997
+    },
+    {
+      "index": 8,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 98,
+      "output_tokens": 2882,
+      "cache_read_tokens": 13184,
+      "cache_write_tokens": 0,
+      "total_tokens": 16164,
+      "reasoning_tokens": 0,
+      "cost_total": 0.005862
+    },
+    {
+      "index": 9,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 89,
+      "output_tokens": 1193,
+      "cache_read_tokens": 16128,
+      "cache_write_tokens": 0,
+      "total_tokens": 17410,
+      "reasoning_tokens": 0,
+      "cost_total": 0.002475
+    },
+    {
+      "index": 10,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 55,
+      "output_tokens": 101,
+      "cache_read_tokens": 17408,
+      "cache_write_tokens": 0,
+      "total_tokens": 17564,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000257
+    },
+    {
+      "index": 11,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 894,
+      "output_tokens": 108,
+      "cache_read_tokens": 17536,
+      "cache_write_tokens": 0,
+      "total_tokens": 18538,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0011099999999999999
+    },
+    {
+      "index": 12,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1128,
+      "output_tokens": 135,
+      "cache_read_tokens": 18496,
+      "cache_write_tokens": 0,
+      "total_tokens": 19759,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001398
+    },
+    {
+      "index": 13,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 343,
+      "output_tokens": 3251,
+      "cache_read_tokens": 19712,
+      "cache_write_tokens": 0,
+      "total_tokens": 23306,
+      "reasoning_tokens": 0,
+      "cost_total": 0.006845
+    },
+    {
+      "index": 14,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 63,
+      "output_tokens": 406,
+      "cache_read_tokens": 23296,
+      "cache_write_tokens": 0,
+      "total_tokens": 23765,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000875
+    },
+    {
+      "index": 15,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 76,
+      "output_tokens": 57,
+      "cache_read_tokens": 23744,
+      "cache_write_tokens": 0,
+      "total_tokens": 23877,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00018999999999999998
+    },
+    {
+      "index": 16,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 415,
+      "output_tokens": 241,
+      "cache_read_tokens": 23872,
+      "cache_write_tokens": 0,
+      "total_tokens": 24528,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000897
+    },
+    {
+      "index": 17,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 71,
+      "output_tokens": 57,
+      "cache_read_tokens": 24512,
+      "cache_write_tokens": 0,
+      "total_tokens": 24640,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000185
+    },
+    {
+      "index": 18,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 201,
+      "output_tokens": 71,
+      "cache_read_tokens": 24576,
+      "cache_write_tokens": 0,
+      "total_tokens": 24848,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000343
+    },
+    {
+      "index": 19,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 100,
+      "output_tokens": 272,
+      "cache_read_tokens": 24832,
+      "cache_write_tokens": 0,
+      "total_tokens": 25204,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000644
+    },
+    {
+      "index": 20,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 105,
+      "output_tokens": 86,
+      "cache_read_tokens": 25152,
+      "cache_write_tokens": 0,
+      "total_tokens": 25343,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00027699999999999996
+    },
+    {
+      "index": 21,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 205,
+      "output_tokens": 174,
+      "cache_read_tokens": 25280,
+      "cache_write_tokens": 0,
+      "total_tokens": 25659,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000553
+    },
+    {
+      "index": 22,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 214,
+      "output_tokens": 96,
+      "cache_read_tokens": 25600,
+      "cache_write_tokens": 0,
+      "total_tokens": 25910,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000406
+    },
+    {
+      "index": 23,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 132,
+      "output_tokens": 162,
+      "cache_read_tokens": 25856,
+      "cache_write_tokens": 0,
+      "total_tokens": 26150,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0004559999999999999
+    },
+    {
+      "index": 24,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 444,
+      "output_tokens": 717,
+      "cache_read_tokens": 26112,
+      "cache_write_tokens": 0,
+      "total_tokens": 27273,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001878
+    },
+    {
+      "index": 25,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 62,
+      "output_tokens": 407,
+      "cache_read_tokens": 27264,
+      "cache_write_tokens": 0,
+      "total_tokens": 27733,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0008759999999999999
+    },
+    {
+      "index": 26,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 280,
+      "output_tokens": 422,
+      "cache_read_tokens": 27520,
+      "cache_write_tokens": 0,
+      "total_tokens": 28222,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001124
+    },
+    {
+      "index": 27,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 116,
+      "output_tokens": 226,
+      "cache_read_tokens": 28160,
+      "cache_write_tokens": 0,
+      "total_tokens": 28502,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0005679999999999999
+    },
+    {
+      "index": 28,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 78,
+      "output_tokens": 263,
+      "cache_read_tokens": 28480,
+      "cache_write_tokens": 0,
+      "total_tokens": 28821,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0006039999999999999
+    },
+    {
+      "index": 29,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 77,
+      "output_tokens": 219,
+      "cache_read_tokens": 28800,
+      "cache_write_tokens": 0,
+      "total_tokens": 29096,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0005149999999999999
+    },
+    {
+      "index": 30,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 94,
+      "output_tokens": 220,
+      "cache_read_tokens": 29056,
+      "cache_write_tokens": 0,
+      "total_tokens": 29370,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000534
+    },
+    {
+      "index": 31,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 111,
+      "output_tokens": 144,
+      "cache_read_tokens": 29312,
+      "cache_write_tokens": 0,
+      "total_tokens": 29567,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000399
+    },
+    {
+      "index": 32,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 116,
+      "output_tokens": 67,
+      "cache_read_tokens": 29504,
+      "cache_write_tokens": 0,
+      "total_tokens": 29687,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00025
+    },
+    {
+      "index": 33,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 199,
+      "output_tokens": 70,
+      "cache_read_tokens": 29632,
+      "cache_write_tokens": 0,
+      "total_tokens": 29901,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000339
+    },
+    {
+      "index": 34,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 149,
+      "output_tokens": 149,
+      "cache_read_tokens": 29888,
+      "cache_write_tokens": 0,
+      "total_tokens": 30186,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00044699999999999997
+    },
+    {
+      "index": 35,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 84,
+      "output_tokens": 141,
+      "cache_read_tokens": 30144,
+      "cache_write_tokens": 0,
+      "total_tokens": 30369,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00036599999999999995
+    },
+    {
+      "index": 36,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 144,
+      "output_tokens": 67,
+      "cache_read_tokens": 30336,
+      "cache_write_tokens": 0,
+      "total_tokens": 30547,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00027800000000000004
+    },
+    {
+      "index": 37,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 26,
+      "output_tokens": 1238,
+      "cache_read_tokens": 30528,
+      "cache_write_tokens": 0,
+      "total_tokens": 31792,
+      "reasoning_tokens": 0,
+      "cost_total": 0.002502
+    },
+    {
+      "index": 38,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 100,
+      "output_tokens": 125,
+      "cache_read_tokens": 31744,
+      "cache_write_tokens": 0,
+      "total_tokens": 31969,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00035
+    },
+    {
+      "index": 39,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 250,
+      "output_tokens": 105,
+      "cache_read_tokens": 31936,
+      "cache_write_tokens": 0,
+      "total_tokens": 32291,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00046
+    },
+    {
+      "index": 40,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 95,
+      "output_tokens": 406,
+      "cache_read_tokens": 32256,
+      "cache_write_tokens": 0,
+      "total_tokens": 32757,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000907
+    }
+  ],
+  "pi_exit_code": 0,
+  "telemetry_source": "pi-json-event-stream",
+  "port_reclamation": {
+    "preexisting_listener": false,
+    "listener_after_pi": false,
+    "attempted": false,
+    "reclaimed": false,
+    "process_ids": [],
+    "diagnostic": "Port 3000 remained free after Pi"
+  }
+}
