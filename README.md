@@ -114,18 +114,18 @@ The raw planner, generator, and repair event streams are retained for audit. Off
 
 ## Reference public validation
 
-The last measured GLM 5.2 run before context-isolated verification used Berget with thinking disabled and passed the generated tests, production build, and live-server check. These numbers are a historical reference; the phase-isolated pipeline must be benchmarked separately before claiming an additional improvement.
+The best measured public-idea result is the current phase-isolated pipeline. It used GLM 5.2 through Berget with thinking disabled and passed the generated tests, production build, and live-server check on the initial verification attempt without a repair session.
 
-| Metric | Frozen public baseline | Planner-guided solution | Change |
-| --- | ---: | ---: | ---: |
-| Model calls | 35 | 12 | -65.7% |
-| Input tokens | 10,722 | 5,067 | -52.7% |
-| Output tokens | 12,541 | 11,844 | -5.6% |
-| Cache-read tokens | 491,008 | 129,024 | -73.7% |
-| Weighted score | 97,445.8 | 53,501.4 | **-45.1%** |
-| Pi-reported cost | €0.035804 | €0.028755 | -19.7% |
+| Metric | Frozen public baseline | Previous planner-guided version | Current phase-isolated version | Current vs baseline |
+| --- | ---: | ---: | ---: | ---: |
+| Model calls | 35 | 12 | 4 | -88.6% |
+| Input tokens | 10,722 | 5,067 | 2,909 | -72.9% |
+| Output tokens | 12,541 | 11,844 | 8,374 | -33.2% |
+| Cache-read tokens | 491,008 | 129,024 | 13,696 | -97.2% |
+| Weighted score | 97,445.8 | 53,501.4 | **29,400.6** | **-69.8%** |
+| Pi-reported cost | €0.035804 | €0.028755 | €0.019657 | -45.1% |
 
-The planner, generator, and repairs have separate model-call, output-token, and cost limits. Every repair event is included in the same audited score. The nine development and validation attempts used while designing the earlier approach reported €0.278521 in total, well below the available €25 experiment budget.
+The current weighted score is 45.0% lower than the previous planner-guided result. The planner, generator, and repairs have separate model-call, output-token, and cost limits, and every repair event is included in the same audited score. The nine development and validation attempts used while designing the earlier approach reported €0.278521 in total, well below the available €25 experiment budget.
 
 ## Develop the harness
 
