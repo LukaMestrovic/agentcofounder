@@ -1,0 +1,47 @@
+{
+  "run_id": "2026-08-30T08-27-03-039Z",
+  "weighted_score": 0,
+  "status": "failed",
+  "app_url": "http://localhost:3000",
+  "start_command": "npm --prefix '../../../output/fixrun-01' run dev",
+  "summary": "The harness did not produce a valid report.partial.json file.",
+  "implemented_features": [],
+  "assumptions": [],
+  "tests_run": [],
+  "harness_checks": [
+    {
+      "command": "vitest run",
+      "journey": "App tests were not run: Generation did not complete with audited model usage",
+      "result": "failed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "Production build was not run: Generation did not complete with audited model usage",
+      "result": "failed"
+    },
+    {
+      "command": "npm run dev",
+      "journey": "HTTP startup probe was not run: Generation did not complete with audited model usage",
+      "result": "failed"
+    }
+  ],
+  "model_calls": 0,
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 0,
+  "total_tokens": 0,
+  "reasoning_tokens": 0,
+  "cost_total": 0,
+  "call_log": [],
+  "pi_exit_code": 1,
+  "telemetry_source": "pi-json-event-stream",
+  "port_reclamation": {
+    "preexisting_listener": false,
+    "listener_after_pi": false,
+    "attempted": false,
+    "reclaimed": false,
+    "process_ids": [],
+    "diagnostic": "Port 3000 remained free after Pi"
+  }
+}
