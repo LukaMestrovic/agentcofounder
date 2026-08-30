@@ -15,7 +15,8 @@
     "test": "vitest run",
     "app:test": "npm --prefix app-template test -- --passWithNoTests",
     "app:build": "npm --prefix app-template run build",
-    "check": "npm run typecheck && npm run test && npm run app:test && npm run app:build"
+    "check": "npm run typecheck && npm run test && npm run app:test && npm run app:build",
+    "results:summarize": "node --import tsx scripts/summarize-runs.ts"
   },
   "dependencies": {
     "@earendil-works/pi-coding-agent": "0.84.1",

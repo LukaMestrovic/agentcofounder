@@ -60,6 +60,7 @@ const APP_PORT = 3000;
 const PROTECTED_EXTENSION = path.join(REPOSITORY_ROOT, "solution", "extensions", "protected-paths.ts");
 const SCHEMA_EXTENSION = path.join(REPOSITORY_ROOT, "solution", "extensions", "submit-app-schema.ts");
 const THINKING_EXTENSION = path.join(REPOSITORY_ROOT, "solution", "extensions", "thinking-off.ts");
+const SAMPLING_EXTENSION = path.join(REPOSITORY_ROOT, "solution", "extensions", "deterministic-sampling.ts");
 const PI_BINARY = path.join(
   REPOSITORY_ROOT,
   "node_modules",
@@ -92,6 +93,7 @@ Environment:
   CHALLENGE_TIMEOUT_MS            Wall-clock limit per top-level Pi phase (default: 3600000)
   CHALLENGE_EXPERIMENT_MAX_EUR    Safety ceiling for one run (default: 0.25)
   CHALLENGE_MAX_REPAIRS           Fresh verification repair sessions, 0-2 (default: 2)
+  CHALLENGE_SEED                  Sampling seed for repeatable runs (default: 20260824)
   CHALLENGE_NODE_BINARY           Optional path to a Node 22 executable
 `);
 }
@@ -252,6 +254,8 @@ export function buildPlannerArguments(idea: string, plannerPrompt: string, publi
     "--extension",
     THINKING_EXTENSION,
     "--extension",
+    SAMPLING_EXTENSION,
+    "--extension",
     SCHEMA_EXTENSION,
     "--tools",
     "submit_app_schema",
@@ -284,6 +288,8 @@ export function buildOrchestratorArguments(
     PROTECTED_EXTENSION,
     "--extension",
     THINKING_EXTENSION,
+    "--extension",
+    SAMPLING_EXTENSION,
     "--tools",
     "write",
     ...modelArguments(),
@@ -313,6 +319,8 @@ export function buildRepairArguments(
     PROTECTED_EXTENSION,
     "--extension",
     THINKING_EXTENSION,
+    "--extension",
+    SAMPLING_EXTENSION,
     "--tools",
     "read,write,edit",
     ...modelArguments(),
@@ -437,7 +445,7 @@ async function main(): Promise<void> {
       label: "planner",
       environment: {
         CHALLENGE_AGENT_PHASE: "planner",
-        CHALLENGE_MAX_OUTPUT_TOKENS: "2400",
+        CHALLENGE_MAX_OUTPUT_TOKENS: "4000",
         CHALLENGE_MAX_MODEL_CALLS: "2",
         CHALLENGE_MAX_AGENT_COST: "0.02",
       },

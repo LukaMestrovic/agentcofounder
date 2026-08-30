@@ -86,10 +86,18 @@ function optionsIdentifier(names: EntityNames, field: Field): string {
   return `${names.singular}${pascalCase(field.name)}Options`;
 }
 
+function enumTypeIdentifier(names: EntityNames, field: Field): string {
+  return `${names.type}${pascalCase(field.name)}`;
+}
+
+function enumCoercionIdentifier(names: EntityNames, field: Field): string {
+  return `as${names.type}${pascalCase(field.name)}`;
+}
+
 function fieldType(names: EntityNames, field: Field): string {
   if (field.type === "number") return "number";
   if (field.type === "boolean") return "boolean";
-  if (field.type === "enum") return `(typeof ${optionsIdentifier(names, field)})[number]`;
+  if (field.type === "enum") return enumTypeIdentifier(names, field);
   return "string";
 }
 
@@ -99,7 +107,7 @@ function invalidCheck(names: EntityNames, field: Field): string {
   if (field.type === "boolean") return `typeof ${reference} !== "boolean"`;
   if (field.type === "enum") {
     const options = optionsIdentifier(names, field);
-    return `!${options}.includes(${reference} as (typeof ${options})[number])`;
+    return `!${options}.includes(${reference} as ${enumTypeIdentifier(names, field)})`;
   }
   return `typeof ${reference} !== "string"`;
 }
@@ -113,14 +121,25 @@ function guardLine(names: EntityNames, field: Field): string {
 function entitySource(schema: AppSchema, entity: Entity, index: number): string {
   const names = entityNames(schema, entity, index);
   const fields = usableFields(entity);
+  // A bare string-literal union rejects the `string` that a <select> onChange hands back, which
+  // cost two repair sessions to a `tsc --noEmit` failure on 2026-08-24. Exporting the alias and a
+  // total coercion beside it makes narrowing a one-token call instead of a type puzzle.
   const enumConstants = fields
     .filter((field) => field.type === "enum")
-    .map(
-      (field) =>
-        `export const ${optionsIdentifier(names, field)} = [${(field.options ?? [])
+    .flatMap((field) => {
+      const options = optionsIdentifier(names, field);
+      const alias = enumTypeIdentifier(names, field);
+      const coercion = enumCoercionIdentifier(names, field);
+      return [
+        `export const ${options} = [${(field.options ?? [])
           .map((option) => JSON.stringify(option))
           .join(", ")}] as const;`,
-    );
+        `export type ${alias} = (typeof ${options})[number];`,
+        `export function ${coercion}(value: string): ${alias} {`,
+        `  return ${options}.includes(value as ${alias}) ? (value as ${alias}) : ${options}[0];`,
+        "}",
+      ];
+    });
 
   const typeMembers = fields.map(
     (field) => `  ${fieldIdentifier(field)}${field.required ? "" : "?"}: ${fieldType(names, field)};`,
@@ -322,6 +341,7 @@ export function scaffoldDataLayerTests(schema: AppSchema, storeFile: ScaffoldFil
 
 function summaryFieldType(names: EntityNames, field: Field): string {
   if (field.type !== "enum") return fieldType(names, field);
+  // Spelled out rather than named so the generator sees the permitted values inline.
   return (field.options ?? []).map((option) => JSON.stringify(option)).join(" | ");
 }
 
@@ -334,12 +354,13 @@ function entitySummary(schema: AppSchema, entity: Entity, index: number): string
   return [
     ...fields
       .filter((field) => field.type === "enum")
-      .map(
-        (field) =>
-          `- const ${optionsIdentifier(names, field)}: readonly [${(field.options ?? [])
-            .map((option) => JSON.stringify(option))
-            .join(", ")}]`,
-      ),
+      .flatMap((field) => [
+        `- const ${optionsIdentifier(names, field)}: readonly [${(field.options ?? [])
+          .map((option) => JSON.stringify(option))
+          .join(", ")}]`,
+        `- type ${enumTypeIdentifier(names, field)} = ${summaryFieldType(names, field)}`,
+        `- ${enumCoercionIdentifier(names, field)}(value: string): ${enumTypeIdentifier(names, field)}`,
+      ]),
     `- type ${names.type} = { id: string; ${members} }`,
     `- const ${names.singular}StorageKey: string`,
     `- is${names.type}(value: unknown): value is ${names.type}`,
@@ -369,6 +390,30 @@ export function scaffoldApiSummary(schema: AppSchema, file: ScaffoldFile, testFi
     "Product-specific rules (filters, derived counts, state transitions, validation messages) are yours to write",
     "on top of these imports.",
   ];
+  const enumFields = entities.flatMap((entity, index) => {
+    const names = entityNames(schema, entity, index);
+    return usableFields(entity)
+      .filter((field) => field.type === "enum")
+      .map((field) => ({ names, field }));
+  });
+  if (enumFields.length > 0) {
+    lines.push(
+      "",
+      "Enum fields are string-literal unions, so a raw `string` from a `<select>`, an input, or `useState<string>`",
+      "will not type-check. Type the state with the exported alias and wrap every incoming value in the matching",
+      "`as...` helper, which is total and falls back to the first option:",
+      "",
+      "```ts",
+      ...enumFields.slice(0, 2).map(({ names, field }) => {
+        const alias = enumTypeIdentifier(names, field);
+        return `const [${fieldIdentifier(field)}, set${pascalCase(field.name)}] = useState<${alias}>(${optionsIdentifier(names, field)}[0]);\n` +
+          `onChange={(event) => set${pascalCase(field.name)}(${enumCoercionIdentifier(names, field)}(event.target.value))}`;
+      }),
+      "```",
+      "",
+      "`tsc --noEmit` runs as part of the production build, so an unnarrowed enum assignment fails the whole run.",
+    );
+  }
   if (testFile) {
     lines.push(
       "",

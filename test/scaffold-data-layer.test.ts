@@ -44,12 +44,21 @@ describe("data layer scaffolding", () => {
     expect(file?.path).toBe(SCAFFOLD_PATH);
     const contents = file?.contents ?? "";
     expect(contents).toContain('export const bookCategoryOptions = ["novel", "cookbook"] as const;');
-    expect(contents).toContain("category: (typeof bookCategoryOptions)[number];");
+    expect(contents).toContain("export type BookCategory = (typeof bookCategoryOptions)[number];");
+    expect(contents).toContain("category: BookCategory;");
     expect(contents).toContain("borrower?: string;");
     expect(contents).toContain('export const bookStorageKey = "shelf-ledger-books";');
     for (const helper of ["isBook", "loadBooks", "saveBooks", "addBook", "updateBook", "removeBook"]) {
       expect(contents).toContain(`export function ${helper}`);
     }
+  });
+
+  it("exports a total coercion so a raw string narrows to the enum union", () => {
+    const contents = scaffoldDataLayer(schemaWith({}))?.contents ?? "";
+    expect(contents).toContain("export function asBookCategory(value: string): BookCategory {");
+    expect(contents).toContain(
+      "  return bookCategoryOptions.includes(value as BookCategory) ? (value as BookCategory) : bookCategoryOptions[0];",
+    );
   });
 
   it("skips ideas that do not persist a record collection in the browser", () => {
