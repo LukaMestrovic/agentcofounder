@@ -24,7 +24,9 @@ import { buildRepairBrief, type RepairBrief } from "./repair.js";
 import { auditAppPortAfterPi } from "./port-owner.js";
 import { signalProcessTree, terminateProcessTree, usesDetachedProcessGroup } from "./process-tree.js";
 import {
+  canonicalResultPath,
   composeResult,
+  createRunIdentity,
   missingRequiredResultPaths,
   readPartialResult,
   rootStartCommand,
@@ -409,9 +411,14 @@ async function main(): Promise<void> {
     readFile(path.join(outputDirectory, "AGENTS.md"), "utf8"),
   ]);
 
-  const runId = new Date().toISOString().replaceAll(":", "-").replaceAll(".", "-");
+  const runIdentity = createRunIdentity();
+  const runId = runIdentity.run_id;
   const artifactDirectory = path.join(REPOSITORY_ROOT, "artifacts", "runs", runId);
-  await mkdir(artifactDirectory, { recursive: true });
+  const savedResultPath = canonicalResultPath(REPOSITORY_ROOT, runId);
+  await Promise.all([
+    mkdir(artifactDirectory, { recursive: true }),
+    mkdir(path.dirname(savedResultPath), { recursive: true }),
+  ]);
   const ideaArtifact = path.join(artifactDirectory, "idea.txt");
   await writeFile(ideaArtifact, idea, "utf8");
 
@@ -516,12 +523,18 @@ async function main(): Promise<void> {
   let verification = unavailableAppVerification(
     canVerifyApp ? "app verification had not completed" : "Generation did not complete with audited model usage",
   );
-  let result = composeResult(partial, usage, combinedExitCode, verification, portReclamation, startCommand);
+  let result = composeResult(
+    partial,
+    usage,
+    combinedExitCode,
+    verification,
+    portReclamation,
+    startCommand,
+    runIdentity,
+  );
   const appResultPath = path.join(outputDirectory, "result.json");
-  const rootResultPath = path.join(REPOSITORY_ROOT, "result.json");
-  const artifactResultPath = path.join(artifactDirectory, "result.json");
-  const requiredResultPaths = [appResultPath, rootResultPath, artifactResultPath];
-  let resultPaths = await writeResult(outputDirectory, result, [rootResultPath, artifactResultPath]);
+  const requiredResultPaths = [appResultPath, savedResultPath];
+  let resultPaths = await writeResult(outputDirectory, result, [savedResultPath]);
   let repairTimedOut = false;
   if (canVerifyApp && validatedSchema) {
     let verificationAttempt = 0;
@@ -593,8 +606,16 @@ async function main(): Promise<void> {
     usage = collectUsageFromJsonLines(
       (await Promise.all(eventFiles.map(async (file) => await readFile(file, "utf8")))).join("\n"),
     );
-    result = composeResult(partial, usage, combinedExitCode, verification, portReclamation, startCommand);
-    resultPaths = await writeResult(outputDirectory, result, [rootResultPath, artifactResultPath]);
+    result = composeResult(
+      partial,
+      usage,
+      combinedExitCode,
+      verification,
+      portReclamation,
+      startCommand,
+      runIdentity,
+    );
+    resultPaths = await writeResult(outputDirectory, result, [savedResultPath]);
   }
   const missingResultPaths = missingRequiredResultPaths(resultPaths, requiredResultPaths);
   const validationErrors = await validateResultObject(result);
@@ -605,6 +626,7 @@ async function main(): Promise<void> {
   }
 
   console.log(`Result written to ${resultPaths.join(" and ")}`);
+  console.log(`Canonical run result: ${savedResultPath}`);
   console.log(`Audit artifacts written to ${artifactDirectory}`);
   console.log(
     `Audited usage: calls=${usage.model_calls}, weighted-score=${weightedTokenScore(usage).toFixed(1)}, cost=${usage.cost_total.toFixed(4)}`,

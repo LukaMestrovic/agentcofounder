@@ -1,0 +1,177 @@
+{
+  "run_id": "2026-08-21T00-45-27-595Z",
+  "weighted_score": 14539.4,
+  "status": "success",
+  "app_url": "http://localhost:3000",
+  "start_command": "npm --prefix '../../../output/evaluation/2026-08-20T23-47-34-450Z/habits/candidate' run dev",
+  "summary": "A personal Habit Tracker to add, edit, and delete habits with name, category (Health/Learning/Home), frequency (Daily/Weekly), and status (Active/Paused). Pause and Resume transitions toggle status; an Active filter narrows the list and an Active habit count is shown, with data preserved across refreshes.",
+  "implemented_features": [
+    "Add a habit with habit name, category, frequency, and status (defaults to Active)",
+    "Validate required habit name, category, and frequency inputs",
+    "Edit an existing habit",
+    "Delete an existing habit",
+    "Pause transition sets an Active habit to Paused",
+    "Resume transition sets a Paused habit back to Active",
+    "Filter the habit list to Active habits",
+    "Active habit count metric",
+    "Persist habits across a browser refresh via localStorage"
+  ],
+  "assumptions": [
+    "Category, Frequency, and Status were modeled as select fields with the idea's exact options; Category and Frequency default to Health and Daily respectively since they are required and have an obvious first value, while Status defaults to Active per the idea.",
+    "The 'validate required input' requirement is satisfied by the engine's built-in required-field validation; no custom validation was needed.",
+    "The schema's transition actions fully express Pause/Resume, so no source changes were required."
+  ],
+  "tests_run": [
+    {
+      "command": "npm test",
+      "journey": "Add a complete habit and validate required input",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Edit and delete an existing habit",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Persist habits across a remount (browser refresh)",
+      "result": "passed"
+    }
+  ],
+  "harness_checks": [
+    {
+      "command": "output/evaluation/2026-08-20T23-47-34-450Z/habits/candidate/node_modules/.bin/vitest run --reporter=json --outputFile=artifacts/runs/2026-08-21T00-45-27-595Z/app-test-results.json --passWithNoTests=false",
+      "journey": "The generated app's Vitest report contained at least one completed test and no failed, skipped, or todo tests",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "The generated app completed a production build",
+      "result": "passed"
+    },
+    {
+      "command": "npm run dev",
+      "journey": "The generated app started its own HTTP server on port 3000 and shut down cleanly",
+      "result": "passed"
+    }
+  ],
+  "model_calls": 9,
+  "input_tokens": 4133,
+  "output_tokens": 1984,
+  "cache_read_tokens": 44544,
+  "cache_write_tokens": 0,
+  "total_tokens": 50661,
+  "reasoning_tokens": 0,
+  "cost_total": 0.008101,
+  "call_log": [
+    {
+      "index": 1,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 116,
+      "output_tokens": 101,
+      "cache_read_tokens": 2112,
+      "cache_write_tokens": 0,
+      "total_tokens": 2329,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00031800000000000003
+    },
+    {
+      "index": 2,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 787,
+      "output_tokens": 96,
+      "cache_read_tokens": 2304,
+      "cache_write_tokens": 0,
+      "total_tokens": 3187,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0009789999999999998
+    },
+    {
+      "index": 3,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 994,
+      "output_tokens": 128,
+      "cache_read_tokens": 3136,
+      "cache_write_tokens": 0,
+      "total_tokens": 4258,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0012499999999999998
+    },
+    {
+      "index": 4,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 475,
+      "output_tokens": 97,
+      "cache_read_tokens": 4224,
+      "cache_write_tokens": 0,
+      "total_tokens": 4796,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000669
+    },
+    {
+      "index": 5,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1255,
+      "output_tokens": 695,
+      "cache_read_tokens": 4736,
+      "cache_write_tokens": 0,
+      "total_tokens": 6686,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0026449999999999998
+    },
+    {
+      "index": 6,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 82,
+      "output_tokens": 68,
+      "cache_read_tokens": 6656,
+      "cache_write_tokens": 0,
+      "total_tokens": 6806,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00021799999999999999
+    },
+    {
+      "index": 7,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 160,
+      "output_tokens": 69,
+      "cache_read_tokens": 6784,
+      "cache_write_tokens": 0,
+      "total_tokens": 7013,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000298
+    },
+    {
+      "index": 8,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 182,
+      "output_tokens": 488,
+      "cache_read_tokens": 6976,
+      "cache_write_tokens": 0,
+      "total_tokens": 7646,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001158
+    },
+    {
+      "index": 9,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 82,
+      "output_tokens": 242,
+      "cache_read_tokens": 7616,
+      "cache_write_tokens": 0,
+      "total_tokens": 7940,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000566
+    }
+  ],
+  "pi_exit_code": 0,
+  "telemetry_source": "pi-json-event-stream",
+  "port_reclamation": {
+    "preexisting_listener": false,
+    "listener_after_pi": false,
+    "attempted": false,
+    "reclaimed": false,
+    "process_ids": [],
+    "diagnostic": "Port 3000 remained free after Pi"
+  }
+}

@@ -38,6 +38,10 @@ export interface UsageSummary {
   call_log: CallLogEntry[];
 }
 
+export interface RunIdentity {
+  run_id: string;
+}
+
 export interface TestRun {
   command: string;
   journey: string;
@@ -78,6 +82,8 @@ export interface PortReclamationAudit {
 }
 
 export interface RunResult extends PartialRunResult, UsageSummary {
+  run_id: string;
+  weighted_score: number;
   harness_checks: TestRun[];
   pi_exit_code: number;
   telemetry_source: "pi-json-event-stream";

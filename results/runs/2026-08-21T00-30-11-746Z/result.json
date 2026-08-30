@@ -1,0 +1,388 @@
+{
+  "run_id": "2026-08-21T00-30-11-746Z",
+  "weighted_score": 140914.4,
+  "status": "success",
+  "app_url": "http://localhost:3000",
+  "start_command": "npm --prefix '../../../output/evaluation/2026-08-20T23-47-34-450Z/maintenance/baseline' run dev",
+  "summary": "Single-user Home Maintenance Tracker. Tasks have Task, Area (Exterior/Interior/Utility dropdown), Due date, and Status (defaults to Open). Users can add, edit, and delete tasks; mark complete (Open→Completed) and reopen; filter to Open tasks; see a derived Open task count; and all data persists across refreshes in localStorage. Required input is validated.",
+  "implemented_features": [
+    "Add a task with Task, Area dropdown (Exterior/Interior/Utility), Due date, and Status defaulting to Open",
+    "Edit an existing task",
+    "Delete an existing task",
+    "Mark complete changes Open to Completed",
+    "Reopen reverses Completed back to Open",
+    "Filter the collection to Open tasks (and All)",
+    "Derived Open task count",
+    "Persist tasks across page refresh via localStorage",
+    "Validate required input (Task, Area, Due date) with inline errors",
+    "Recover gracefully from malformed persisted data",
+    "Empty states for no tasks and no open tasks"
+  ],
+  "assumptions": [
+    "Area is limited to the three named options (Exterior, Interior, Utility) as a dropdown; no free-text area was implied, so none is offered.",
+    "Due date is a date input stored as yyyy-mm-dd; the idea did not specify overdue handling or time, so due date is treated as a plain required date with no overdue highlighting.",
+    "Status toggles only between Open and Completed via Mark complete / Reopen; no third status was implied.",
+    "The filter requirement names Open tasks only; an All view is provided alongside so completed tasks remain reachable, but the Open filter is the primary, tested filter.",
+    "Persistence is single-user browser localStorage behind a repository boundary; no backend or external API was implied.",
+    "Deletion is immediate with no confirm dialog since the idea did not request one; adding one would be a minor extension behind the same boundary."
+  ],
+  "tests_run": [
+    {
+      "command": "npm test",
+      "journey": "App starts with an empty state and a zero open task count",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Add a task with the complete record (Task, Area, Due date, Status=Open) and see it in the collection",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Show the derived Open task count and filter the collection to Open tasks, hiding Completed",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Mark complete changes Open to Completed and Reopen reverses it back to Open",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Edit an existing task and persist the changed fields",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Delete an existing task and return to the empty state",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Validate required input and prevent adding an incomplete task",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Persist tasks across a simulated page refresh via localStorage",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Recover from malformed persisted data without crashing, keeping only well-formed records",
+      "result": "passed"
+    }
+  ],
+  "harness_checks": [
+    {
+      "command": "output/evaluation/2026-08-20T23-47-34-450Z/maintenance/baseline/node_modules/.bin/vitest run --reporter=json --outputFile=artifacts/runs/2026-08-21T00-30-11-746Z/app-test-results.json --passWithNoTests=false",
+      "journey": "The generated app's Vitest report contained at least one completed test and no failed, skipped, or todo tests",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "The generated app completed a production build",
+      "result": "passed"
+    },
+    {
+      "command": "npm run dev",
+      "journey": "The generated app started its own HTTP server on port 3000 and shut down cleanly",
+      "result": "passed"
+    }
+  ],
+  "model_calls": 25,
+  "input_tokens": 27385,
+  "output_tokens": 14257,
+  "cache_read_tokens": 707584,
+  "cache_write_tokens": 0,
+  "total_tokens": 749226,
+  "reasoning_tokens": 0,
+  "cost_total": 0.05589899999999999,
+  "call_log": [
+    {
+      "index": 1,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 155,
+      "output_tokens": 95,
+      "cache_read_tokens": 2112,
+      "cache_write_tokens": 0,
+      "total_tokens": 2362,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000345
+    },
+    {
+      "index": 2,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 975,
+      "output_tokens": 328,
+      "cache_read_tokens": 2304,
+      "cache_write_tokens": 0,
+      "total_tokens": 3607,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001631
+    },
+    {
+      "index": 3,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1435,
+      "output_tokens": 188,
+      "cache_read_tokens": 3584,
+      "cache_write_tokens": 0,
+      "total_tokens": 5207,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001811
+    },
+    {
+      "index": 4,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 587,
+      "output_tokens": 1490,
+      "cache_read_tokens": 5184,
+      "cache_write_tokens": 0,
+      "total_tokens": 7261,
+      "reasoning_tokens": 0,
+      "cost_total": 0.003567
+    },
+    {
+      "index": 5,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 129,
+      "output_tokens": 3614,
+      "cache_read_tokens": 7232,
+      "cache_write_tokens": 0,
+      "total_tokens": 10975,
+      "reasoning_tokens": 0,
+      "cost_total": 0.007357
+    },
+    {
+      "index": 6,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 133,
+      "output_tokens": 1992,
+      "cache_read_tokens": 10944,
+      "cache_write_tokens": 0,
+      "total_tokens": 13069,
+      "reasoning_tokens": 0,
+      "cost_total": 0.004117
+    },
+    {
+      "index": 7,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 67,
+      "output_tokens": 195,
+      "cache_read_tokens": 13056,
+      "cache_write_tokens": 0,
+      "total_tokens": 13318,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000457
+    },
+    {
+      "index": 8,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 19869,
+      "output_tokens": 811,
+      "cache_read_tokens": 13312,
+      "cache_write_tokens": 0,
+      "total_tokens": 33992,
+      "reasoning_tokens": 0,
+      "cost_total": 0.021490999999999996
+    },
+    {
+      "index": 9,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 61,
+      "output_tokens": 608,
+      "cache_read_tokens": 33984,
+      "cache_write_tokens": 0,
+      "total_tokens": 34653,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001277
+    },
+    {
+      "index": 10,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 96,
+      "output_tokens": 70,
+      "cache_read_tokens": 34624,
+      "cache_write_tokens": 0,
+      "total_tokens": 34790,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000236
+    },
+    {
+      "index": 11,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 592,
+      "output_tokens": 679,
+      "cache_read_tokens": 34752,
+      "cache_write_tokens": 0,
+      "total_tokens": 36023,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00195
+    },
+    {
+      "index": 12,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 110,
+      "output_tokens": 77,
+      "cache_read_tokens": 35968,
+      "cache_write_tokens": 0,
+      "total_tokens": 36155,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000264
+    },
+    {
+      "index": 13,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 324,
+      "output_tokens": 341,
+      "cache_read_tokens": 36096,
+      "cache_write_tokens": 0,
+      "total_tokens": 36761,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001006
+    },
+    {
+      "index": 14,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 80,
+      "output_tokens": 63,
+      "cache_read_tokens": 36736,
+      "cache_write_tokens": 0,
+      "total_tokens": 36879,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000206
+    },
+    {
+      "index": 15,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 459,
+      "output_tokens": 109,
+      "cache_read_tokens": 36864,
+      "cache_write_tokens": 0,
+      "total_tokens": 37432,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000677
+    },
+    {
+      "index": 16,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 264,
+      "output_tokens": 266,
+      "cache_read_tokens": 37376,
+      "cache_write_tokens": 0,
+      "total_tokens": 37906,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000796
+    },
+    {
+      "index": 17,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 73,
+      "output_tokens": 121,
+      "cache_read_tokens": 37888,
+      "cache_write_tokens": 0,
+      "total_tokens": 38082,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000315
+    },
+    {
+      "index": 18,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 434,
+      "output_tokens": 192,
+      "cache_read_tokens": 38080,
+      "cache_write_tokens": 0,
+      "total_tokens": 38706,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0008179999999999999
+    },
+    {
+      "index": 19,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 765,
+      "output_tokens": 1391,
+      "cache_read_tokens": 38656,
+      "cache_write_tokens": 0,
+      "total_tokens": 40812,
+      "reasoning_tokens": 0,
+      "cost_total": 0.003547
+    },
+    {
+      "index": 20,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 98,
+      "output_tokens": 156,
+      "cache_read_tokens": 40768,
+      "cache_write_tokens": 0,
+      "total_tokens": 41022,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00041
+    },
+    {
+      "index": 21,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 249,
+      "output_tokens": 83,
+      "cache_read_tokens": 40960,
+      "cache_write_tokens": 0,
+      "total_tokens": 41292,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000415
+    },
+    {
+      "index": 22,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 154,
+      "output_tokens": 155,
+      "cache_read_tokens": 41280,
+      "cache_write_tokens": 0,
+      "total_tokens": 41589,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000464
+    },
+    {
+      "index": 23,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 148,
+      "output_tokens": 63,
+      "cache_read_tokens": 41536,
+      "cache_write_tokens": 0,
+      "total_tokens": 41747,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000274
+    },
+    {
+      "index": 24,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 27,
+      "output_tokens": 854,
+      "cache_read_tokens": 41728,
+      "cache_write_tokens": 0,
+      "total_tokens": 42609,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0017349999999999998
+    },
+    {
+      "index": 25,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 101,
+      "output_tokens": 316,
+      "cache_read_tokens": 42560,
+      "cache_write_tokens": 0,
+      "total_tokens": 42977,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0007329999999999999
+    }
+  ],
+  "pi_exit_code": 0,
+  "telemetry_source": "pi-json-event-stream",
+  "port_reclamation": {
+    "preexisting_listener": false,
+    "listener_after_pi": false,
+    "attempted": false,
+    "reclaimed": false,
+    "process_ids": [],
+    "diagnostic": "Port 3000 remained free after Pi"
+  }
+}

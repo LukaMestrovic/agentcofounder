@@ -1,7 +1,9 @@
 {
+  "run_id": "2026-08-23T12-34-11-882Z",
+  "weighted_score": 53501.4,
   "status": "success",
   "app_url": "http://localhost:3000",
-  "start_command": "npm --prefix 'output/app' run dev",
+  "start_command": "npm --prefix '../../../output/app' run dev",
   "summary": "Shelf Ledger: Track your personal book collection and who borrowed what, so you always know where your books are.",
   "implemented_features": [
     "Add a new book to the collection",

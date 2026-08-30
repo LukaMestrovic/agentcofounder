@@ -1,0 +1,205 @@
+{
+  "run_id": "2026-08-21T06-33-30-964Z",
+  "weighted_score": 23827.4,
+  "status": "success",
+  "app_url": "http://localhost:3000",
+  "start_command": "npm --prefix '../../../output/maintenance' run dev",
+  "summary": "A home-maintenance task tracker. Each task has a description, area of the home, due date, and an Open or Completed status. Users can add, edit, and delete tasks, mark them complete, reopen them, filter to open tasks, and see a live count of open tasks. All data persists in this browser across refreshes.",
+  "implemented_features": [
+    "Add a task with description, area of the home, due date, and default Open status, with validation of required fields",
+    "Edit an existing task's details and save changes",
+    "Delete a task from the collection",
+    "Complete an open task via a Complete transition that sets status to Completed",
+    "Reopen a completed task via a Reopen transition that sets status back to Open",
+    "Open-task filter that narrows the list to status equals Open",
+    "Derived Open-tasks count metric shown alongside the collection",
+    "Local persistence in localStorage with malformed-data recovery, surviving a browser refresh"
+  ],
+  "assumptions": [
+    "The idea specified an open/completed status but not the exact option wording; I used 'Open' and 'Completed' as the two status option values.",
+    "The idea did not enumerate home areas, so I provided a curated list of common areas (Interior, Exterior, Kitchen, Bathroom, Bedroom, Living Room, Garage, Basement, Yard, Plumbing, Electrical, HVAC, Roof) with 'Interior' as the default.",
+    "The requested derived value is the open-task count; I expressed it as the schema's count metric conditioned on status equals Open, which the engine renders alongside the list. No source change was needed.",
+    "Due date is required so every open task carries a meaningful target date; validation surfaces when it is omitted.",
+    "The Complete and Reopen actions are modeled as declarative transitions gated on the current status, so repeated actions are prevented by the engine's repeated-transition protection."
+  ],
+  "tests_run": [
+    {
+      "command": "npm test",
+      "journey": "Adds a complete task and validates required input",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Edits and deletes an existing task",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "journey": "Persists tasks across a remount (browser refresh)",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "Type-checks and production build succeed with no errors",
+      "result": "passed"
+    }
+  ],
+  "harness_checks": [
+    {
+      "command": "output/maintenance/node_modules/.bin/vitest run --reporter=json --outputFile=artifacts/runs/2026-08-21T06-33-30-964Z/app-test-results.json --passWithNoTests=false",
+      "journey": "The generated app's Vitest report contained at least one completed test and no failed, skipped, or todo tests",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "The generated app completed a production build",
+      "result": "passed"
+    },
+    {
+      "command": "npm run dev",
+      "journey": "The generated app started its own HTTP server on port 3000 and shut down cleanly",
+      "result": "passed"
+    }
+  ],
+  "model_calls": 11,
+  "input_tokens": 8964,
+  "output_tokens": 2243,
+  "cache_read_tokens": 81344,
+  "cache_write_tokens": 0,
+  "total_tokens": 92551,
+  "reasoning_tokens": 0,
+  "cost_total": 0.01345,
+  "call_log": [
+    {
+      "index": 1,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 78,
+      "output_tokens": 74,
+      "cache_read_tokens": 2112,
+      "cache_write_tokens": 0,
+      "total_tokens": 2264,
+      "reasoning_tokens": 0,
+      "cost_total": 0.000226
+    },
+    {
+      "index": 2,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 772,
+      "output_tokens": 54,
+      "cache_read_tokens": 2240,
+      "cache_write_tokens": 0,
+      "total_tokens": 3066,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00088
+    },
+    {
+      "index": 3,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1001,
+      "output_tokens": 122,
+      "cache_read_tokens": 3008,
+      "cache_write_tokens": 0,
+      "total_tokens": 4131,
+      "reasoning_tokens": 0,
+      "cost_total": 0.001245
+    },
+    {
+      "index": 4,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 186,
+      "output_tokens": 80,
+      "cache_read_tokens": 4096,
+      "cache_write_tokens": 0,
+      "total_tokens": 4362,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00034599999999999995
+    },
+    {
+      "index": 5,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 2854,
+      "output_tokens": 116,
+      "cache_read_tokens": 4352,
+      "cache_write_tokens": 0,
+      "total_tokens": 7322,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0030859999999999998
+    },
+    {
+      "index": 6,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 2766,
+      "output_tokens": 120,
+      "cache_read_tokens": 7296,
+      "cache_write_tokens": 0,
+      "total_tokens": 10182,
+      "reasoning_tokens": 0,
+      "cost_total": 0.003006
+    },
+    {
+      "index": 7,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 853,
+      "output_tokens": 710,
+      "cache_read_tokens": 10176,
+      "cache_write_tokens": 0,
+      "total_tokens": 11739,
+      "reasoning_tokens": 0,
+      "cost_total": 0.002273
+    },
+    {
+      "index": 8,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 59,
+      "output_tokens": 26,
+      "cache_read_tokens": 11712,
+      "cache_write_tokens": 0,
+      "total_tokens": 11797,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00011099999999999999
+    },
+    {
+      "index": 9,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 141,
+      "output_tokens": 20,
+      "cache_read_tokens": 11776,
+      "cache_write_tokens": 0,
+      "total_tokens": 11937,
+      "reasoning_tokens": 0,
+      "cost_total": 0.00018099999999999998
+    },
+    {
+      "index": 10,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 180,
+      "output_tokens": 630,
+      "cache_read_tokens": 11904,
+      "cache_write_tokens": 0,
+      "total_tokens": 12714,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0014399999999999999
+    },
+    {
+      "index": 11,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 74,
+      "output_tokens": 291,
+      "cache_read_tokens": 12672,
+      "cache_write_tokens": 0,
+      "total_tokens": 13037,
+      "reasoning_tokens": 0,
+      "cost_total": 0.0006559999999999999
+    }
+  ],
+  "pi_exit_code": 0,
+  "telemetry_source": "pi-json-event-stream",
+  "port_reclamation": {
+    "preexisting_listener": false,
+    "listener_after_pi": false,
+    "attempted": false,
+    "reclaimed": false,
+    "process_ids": [],
+    "diagnostic": "Port 3000 remained free after Pi"
+  }
+}

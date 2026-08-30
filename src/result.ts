@@ -4,10 +4,12 @@ import type {
   AppVerification,
   PartialRunResult,
   PortReclamationAudit,
+  RunIdentity,
   RunResult,
   TestRun,
   UsageSummary,
 } from "./types.js";
+import { weightedTokenScore } from "./usage.js";
 
 const FALLBACK_PARTIAL: PartialRunResult = {
   status: "failed",
@@ -20,6 +22,24 @@ const FALLBACK_PARTIAL: PartialRunResult = {
 };
 
 const APP_DIRECTORY_START_COMMAND = "npm run dev";
+const RUN_ID_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z$/u;
+
+export function runIdFromStartedAt(startedAt: string): string {
+  const parsed = new Date(startedAt);
+  if (!Number.isFinite(parsed.getTime()) || parsed.toISOString() !== startedAt) {
+    throw new Error(`Invalid ISO run start time: ${startedAt}`);
+  }
+  return startedAt.replaceAll(":", "-").replaceAll(".", "-");
+}
+
+export function createRunIdentity(now = new Date()): RunIdentity {
+  return { run_id: runIdFromStartedAt(now.toISOString()) };
+}
+
+export function canonicalResultPath(repositoryRoot: string, runId: string): string {
+  if (!RUN_ID_PATTERN.test(runId)) throw new Error(`Invalid run id: ${runId}`);
+  return path.join(repositoryRoot, "results", "runs", runId, "result.json");
+}
 
 function quotePosixShellArgument(value: string): string {
   return `'${value.replaceAll("'", "'\\''")}'`;
@@ -29,7 +49,7 @@ export function rootStartCommand(repositoryRoot: string, appDirectory: string): 
   return resultStartCommand(repositoryRoot, appDirectory);
 }
 
-function resultStartCommand(resultDirectory: string, appDirectory: string): string {
+export function resultStartCommand(resultDirectory: string, appDirectory: string): string {
   const relativeAppDirectory = path.relative(resultDirectory, appDirectory).split(path.sep).join("/");
   if (relativeAppDirectory === "") return APP_DIRECTORY_START_COMMAND;
   return `npm --prefix ${quotePosixShellArgument(relativeAppDirectory)} run dev`;
@@ -92,12 +112,15 @@ export function composeResult(
   verification: AppVerification,
   portReclamation: PortReclamationAudit,
   startCommand: string,
+  identity: RunIdentity,
 ): RunResult {
   const runFailed = piExitCode !== 0 || usage.model_calls === 0 || partial.status === "failed";
   const productJourneysPassed =
     partial.tests_run.length > 0 && partial.tests_run.every((test) => test.result === "passed");
   const status = runFailed ? "failed" : verification.passed && productJourneysPassed ? partial.status : "partial";
   return {
+    ...identity,
+    weighted_score: weightedTokenScore(usage),
     ...partial,
     status,
     app_url: "http://localhost:3000",

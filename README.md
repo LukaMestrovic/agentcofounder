@@ -106,26 +106,26 @@ The runner independently executes the pinned Vitest binary, requires at least on
 
 The runner records whether port 3000 was occupied before Pi starts. If Pi leaves a listener behind, cleanup only targets same-user listener processes whose working directory is the generated app; Linux uses `/proc`, while macOS uses bounded, non-blocking `lsof` calls. A listener that predates Pi is never reclaimed. The `port_reclamation` result field records whether cleanup was considered, attempted, and successful, plus the affected process IDs.
 
-A provisional result is written before app verification starts. Verification failures degrade a completed model run to `partial`; Pi startup or telemetry failures remain `failed`. Equivalent final results are emitted at the generated app root (`output/app/result.json`), repository root (`result.json`), and timestamped audit directory (`artifacts/runs/<run-id>/result.json`); only `start_command` differs so each command works from the directory containing its result. The root copy is a transient, ignored compatibility file, while the audit copy preserves each local run. Failure to write any required destination makes the harness exit non-zero. Port 3000 must be free on both IPv4 and IPv6 loopback addresses before verification begins.
+A provisional result is written before app verification starts. Verification failures degrade a completed model run to `partial`; Pi startup or telemetry failures remain `failed`. The canonical final record is `results/runs/<run-id>/result.json`; it is never replaced by a later run. A compatibility copy remains beside the generated app at `output/app/result.json`, with only `start_command` adjusted for its location. The former ambiguous repository-root `result.json` and audit-folder result mirror are no longer written. Failure to write either required destination makes the harness exit non-zero. Port 3000 must be free on both IPv4 and IPv6 loopback addresses before verification begins.
 
-The raw planner, generator, and repair event streams are retained for audit. Official judging must independently recompute usage across all of them and compare it with `result.json`; the participant-controlled report is never the final scoring authority.
+The raw planner, generator, and repair event streams are retained for audit. Official judging must independently recompute usage across all of them and compare it with the matching `results/runs/<run-id>/result.json`; the participant-controlled report is never the final scoring authority.
 
-`reasoning_tokens` and `cost_total` are included as additional audit fields. The command also prints the public competition score `input + 3 × output + 0.1 × cache reads`; cache writes are retained separately but are not part of that formula.
+Every result contains the immutable timestamp-shaped `run_id` and runner-computed `weighted_score`. The score is validated against `input + 3 × output + 0.1 × cache reads`; cache writes are retained separately but are not part of that formula. `reasoning_tokens` and `cost_total` remain additional audit fields.
 
 ## Reference public validation
 
-The last measured GLM 5.2 run before context-isolated verification used Berget with thinking disabled and passed the generated tests, production build, and live-server check. These numbers are a historical reference; the phase-isolated pipeline must be benchmarked separately before claiming an additional improvement.
+The best measured public-idea result is the current phase-isolated pipeline. It used GLM 5.2 through Berget with thinking disabled and passed the generated tests, production build, and live-server check on the initial verification attempt without a repair session.
 
-| Metric | Frozen public baseline | Planner-guided solution | Change |
-| --- | ---: | ---: | ---: |
-| Model calls | 35 | 12 | -65.7% |
-| Input tokens | 10,722 | 5,067 | -52.7% |
-| Output tokens | 12,541 | 11,844 | -5.6% |
-| Cache-read tokens | 491,008 | 129,024 | -73.7% |
-| Weighted score | 97,445.8 | 53,501.4 | **-45.1%** |
-| Pi-reported cost | €0.035804 | €0.028755 | -19.7% |
+| Metric | Frozen public baseline | Previous planner-guided version | Current phase-isolated version | Current vs baseline |
+| --- | ---: | ---: | ---: | ---: |
+| Model calls | 35 | 12 | 4 | -88.6% |
+| Input tokens | 10,722 | 5,067 | 2,909 | -72.9% |
+| Output tokens | 12,541 | 11,844 | 8,374 | -33.2% |
+| Cache-read tokens | 491,008 | 129,024 | 13,696 | -97.2% |
+| Weighted score | 97,445.8 | 53,501.4 | **29,400.6** | **-69.8%** |
+| Pi-reported cost | €0.035804 | €0.028755 | €0.019657 | -45.1% |
 
-The planner, generator, and repairs have separate model-call, output-token, and cost limits. Every repair event is included in the same audited score. The nine development and validation attempts used while designing the earlier approach reported €0.278521 in total, well below the available €25 experiment budget.
+The current weighted score is 45.0% lower than the previous planner-guided result. The planner, generator, and repairs have separate model-call, output-token, and cost limits, and every repair event is included in the same audited score. The nine development and validation attempts used while designing the earlier approach reported €0.278521 in total, well below the available €25 experiment budget.
 
 ## Develop the harness
 

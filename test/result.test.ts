@@ -4,17 +4,21 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
+  canonicalResultPath,
   composeResult,
+  createRunIdentity,
   missingRequiredResultPaths,
   normalizePartialResult,
   readPartialResult,
   rootStartCommand,
+  runIdFromStartedAt,
   writeResult,
 } from "../src/result.js";
 import type {
   AppVerification,
   PartialRunResult,
   PortReclamationAudit,
+  RunIdentity,
   UsageSummary,
 } from "../src/types.js";
 import { validateResultObject } from "../src/validate-result.js";
@@ -30,6 +34,9 @@ const partial: PartialRunResult = {
 };
 
 const ROOT_START_COMMAND = "npm --prefix 'output/app' run dev";
+const identity: RunIdentity = {
+  run_id: "2026-08-25T08-30-00-000Z",
+};
 
 const usage: UsageSummary = {
   model_calls: 1,
@@ -75,13 +82,14 @@ const portReclamation: PortReclamationAudit = {
 
 describe("result contract", () => {
   it("accepts a reconciled result", async () => {
-    const result = composeResult(partial, usage, 0, verification, portReclamation, ROOT_START_COMMAND);
+    const result = composeResult(partial, usage, 0, verification, portReclamation, ROOT_START_COMMAND, identity);
     expect(await validateResultObject(result)).toEqual([]);
+    expect(result).toMatchObject({ ...identity, weighted_score: 25.2 });
     expect(result.port_reclamation).toMatchObject({ attempted: false, process_ids: [] });
   });
 
   it("overrides success when Pi exits unsuccessfully", () => {
-    expect(composeResult(partial, usage, 124, verification, portReclamation, ROOT_START_COMMAND).status).toBe(
+    expect(composeResult(partial, usage, 124, verification, portReclamation, ROOT_START_COMMAND, identity).status).toBe(
       "failed",
     );
   });
@@ -98,7 +106,7 @@ describe("result contract", () => {
       cost_total: 0,
       call_log: [],
     };
-    const result = composeResult(partial, zeroUsage, 0, verification, portReclamation, ROOT_START_COMMAND);
+    const result = composeResult(partial, zeroUsage, 0, verification, portReclamation, ROOT_START_COMMAND, identity);
     expect(result.status).toBe("failed");
     expect(await validateResultObject({ ...result, status: "success" })).toContain(
       "non-failed result must include at least one model call",
@@ -114,6 +122,7 @@ describe("result contract", () => {
         { ...verification, passed: false },
         portReclamation,
         ROOT_START_COMMAND,
+        identity,
       ).status,
     ).toBe("partial");
   });
@@ -126,6 +135,7 @@ describe("result contract", () => {
       verification,
       portReclamation,
       ROOT_START_COMMAND,
+      identity,
     );
 
     expect(result.status).toBe("partial");
@@ -142,6 +152,7 @@ describe("result contract", () => {
       verification,
       portReclamation,
       ROOT_START_COMMAND,
+      identity,
     );
 
     expect(result.status).toBe("partial");
@@ -166,6 +177,7 @@ describe("result contract", () => {
       verification,
       portReclamation,
       ROOT_START_COMMAND,
+      identity,
     );
     expect(result).toMatchObject({
       app_url: "http://localhost:3000",
@@ -197,7 +209,7 @@ describe("result contract", () => {
       assumptions: [],
       tests_run: [{ command: "npm test", journey: "Kept journey", result: "passed" }],
     });
-    expect(composeResult(normalized!, usage, 0, verification, portReclamation, ROOT_START_COMMAND).status).toBe(
+    expect(composeResult(normalized!, usage, 0, verification, portReclamation, ROOT_START_COMMAND, identity).status).toBe(
       "partial",
     );
   });
@@ -213,13 +225,30 @@ describe("result contract", () => {
   });
 
   it("rejects telemetry totals that do not reconcile", async () => {
-    const result = composeResult(partial, usage, 0, verification, portReclamation, ROOT_START_COMMAND);
+    const result = composeResult(partial, usage, 0, verification, portReclamation, ROOT_START_COMMAND, identity);
     result.input_tokens += 1;
     expect(await validateResultObject(result)).toContain("input_tokens does not reconcile with call_log");
   });
 
+  it("rejects a weighted score that does not reconcile", async () => {
+    const result = composeResult(partial, usage, 0, verification, portReclamation, ROOT_START_COMMAND, identity);
+    expect(await validateResultObject({ ...result, weighted_score: result.weighted_score + 1 })).toContain(
+      "weighted_score does not match the competition formula",
+    );
+  });
+
+  it("creates timestamp-based run identities and canonical paths", () => {
+    const startedAt = "2026-08-25T08:30:00.000Z";
+    const created = createRunIdentity(new Date(startedAt));
+    expect(created).toEqual(identity);
+    expect(runIdFromStartedAt(startedAt)).toBe(identity.run_id);
+    expect(canonicalResultPath("/challenge", identity.run_id)).toBe(
+      `/challenge/results/runs/${identity.run_id}/result.json`,
+    );
+  });
+
   it("requires every documented harness audit field", async () => {
-    const result = composeResult(partial, usage, 0, verification, portReclamation, ROOT_START_COMMAND);
+    const result = composeResult(partial, usage, 0, verification, portReclamation, ROOT_START_COMMAND, identity);
     const auditFields = [
       "harness_checks",
       "reasoning_tokens",
@@ -227,6 +256,8 @@ describe("result contract", () => {
       "pi_exit_code",
       "telemetry_source",
       "port_reclamation",
+      "run_id",
+      "weighted_score",
     ];
 
     for (const field of auditFields) {
@@ -240,7 +271,7 @@ describe("result contract", () => {
     const directory = await mkdtemp(path.join(os.tmpdir(), "agent-cofounder-result-"));
     const warning = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     try {
-      const result = composeResult(partial, usage, 0, verification, portReclamation, ROOT_START_COMMAND);
+      const result = composeResult(partial, usage, 0, verification, portReclamation, ROOT_START_COMMAND, identity);
       const paths = await writeResult(directory, result, [path.join(directory, "missing", "result.json")]);
       expect(paths).toEqual([path.join(directory, "result.json")]);
       expect(warning).toHaveBeenCalledWith(expect.stringContaining("Unable to write result destination"));
@@ -253,10 +284,9 @@ describe("result contract", () => {
   it("writes a start command that works from each result location", async () => {
     const repositoryRoot = await mkdtemp(path.join(os.tmpdir(), "agent-cofounder-result-locations-"));
     const appDirectory = path.join(repositoryRoot, "output", "app");
-    const rootResultPath = path.join(repositoryRoot, "result.json");
-    const artifactResultPath = path.join(repositoryRoot, "artifacts", "runs", "run-01", "result.json");
+    const savedResultPath = canonicalResultPath(repositoryRoot, identity.run_id);
     await mkdir(appDirectory, { recursive: true });
-    await mkdir(path.dirname(artifactResultPath), { recursive: true });
+    await mkdir(path.dirname(savedResultPath), { recursive: true });
     try {
       const result = composeResult(
         partial,
@@ -265,19 +295,17 @@ describe("result contract", () => {
         verification,
         portReclamation,
         rootStartCommand(repositoryRoot, appDirectory),
+        identity,
       );
-      await writeResult(appDirectory, result, [rootResultPath, artifactResultPath]);
-      const [appResult, rootResult, artifactResult] = await Promise.all([
+      await writeResult(appDirectory, result, [savedResultPath]);
+      const [appResult, savedResult] = await Promise.all([
         readFile(path.join(appDirectory, "result.json"), "utf8").then(JSON.parse),
-        readFile(rootResultPath, "utf8").then(JSON.parse),
-        readFile(artifactResultPath, "utf8").then(JSON.parse),
+        readFile(savedResultPath, "utf8").then(JSON.parse),
       ]);
 
       expect(appResult.start_command).toBe("npm run dev");
-      expect(rootResult.start_command).toBe(ROOT_START_COMMAND);
-      expect(artifactResult.start_command).toBe("npm --prefix '../../../output/app' run dev");
-      expect({ ...appResult, start_command: ROOT_START_COMMAND }).toEqual(rootResult);
-      expect({ ...artifactResult, start_command: ROOT_START_COMMAND }).toEqual(rootResult);
+      expect(savedResult.start_command).toBe("npm --prefix '../../../output/app' run dev");
+      expect({ ...appResult, start_command: savedResult.start_command }).toEqual(savedResult);
     } finally {
       await rm(repositoryRoot, { recursive: true });
     }
@@ -310,8 +338,11 @@ describe("result contract", () => {
   it("identifies either required result destination when it was not written", () => {
     expect(
       missingRequiredResultPaths(
-        ["/challenge/result.json"],
-        ["/challenge/output/app/result.json", "/challenge/result.json"],
+        [`/challenge/results/runs/${identity.run_id}/result.json`],
+        [
+          "/challenge/output/app/result.json",
+          `/challenge/results/runs/${identity.run_id}/result.json`,
+        ],
       ),
     ).toEqual(["/challenge/output/app/result.json"]);
   });
