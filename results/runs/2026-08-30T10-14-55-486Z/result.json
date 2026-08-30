@@ -1,0 +1,216 @@
+{
+  "run_id": "2026-08-30T10-14-55-486Z",
+  "weighted_score": 50834,
+  "status": "partial",
+  "app_url": "http://localhost:3000",
+  "start_command": "npm --prefix '../../../output/batch-04' run dev",
+  "summary": "Shelf Ledger: generation completed, but independent verification did not pass.",
+  "implemented_features": [
+    "Add a book to the collection",
+    "Edit or remove a book",
+    "Lend a book and mark it returned",
+    "Filter the collection by status",
+    "See how many books are lent out",
+    "Data survives a browser refresh"
+  ],
+  "assumptions": [
+    "Built for A single user managing their personal book collection on their own computer..",
+    "Persistence decision: Browser localStorage under key 'shelf-ledger-books'; JSON array of Book objects loaded on startup with malformed-data recovery to empty array."
+  ],
+  "tests_run": [
+    {
+      "command": "npm test",
+      "journey": "Generated journey verification failed: Add a book, lend it, verify lent-out count increments, then return it and verify count decrements; Add a book, edit its title and category, confirm changes persist in the list; Delete a book and confirm it no longer appears in the list or count; Load with malformed localStorage data and verify the app starts with an empty list. Failed checks: output/batch-04/node_modules/.bin/vitest run --reporter=json --outputFile=artifacts/runs/2026-08-30T10-14-55-486Z/verification/attempt-02/app-test-results.json --passWithNoTests=false",
+      "result": "failed"
+    }
+  ],
+  "harness_checks": [
+    {
+      "command": "output/batch-04/node_modules/.bin/vitest run --reporter=json --outputFile=artifacts/runs/2026-08-30T10-14-55-486Z/verification/attempt-02/app-test-results.json --passWithNoTests=false",
+      "journey": "The generated app's Vitest report contained at least one completed test and no failed, skipped, or todo tests",
+      "result": "failed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "The generated app completed a production build",
+      "result": "passed"
+    },
+    {
+      "command": "npm run dev",
+      "journey": "The generated app started its own HTTP server on port 3000 and shut down cleanly",
+      "result": "passed"
+    }
+  ],
+  "model_calls": 14,
+  "input_tokens": 15009,
+  "output_tokens": 10043,
+  "cache_read_tokens": 56960,
+  "cache_write_tokens": 0,
+  "total_tokens": 82012,
+  "reasoning_tokens": 0,
+  "cost_total": 0,
+  "call_log": [
+    {
+      "index": 1,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 221,
+      "output_tokens": 1345,
+      "cache_read_tokens": 1856,
+      "cache_write_tokens": 0,
+      "total_tokens": 3422,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 2,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 42,
+      "output_tokens": 4,
+      "cache_read_tokens": 3392,
+      "cache_write_tokens": 0,
+      "total_tokens": 3438,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 3,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 2470,
+      "output_tokens": 4695,
+      "cache_read_tokens": 768,
+      "cache_write_tokens": 0,
+      "total_tokens": 7933,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 4,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 116,
+      "output_tokens": 3,
+      "cache_read_tokens": 7872,
+      "cache_write_tokens": 0,
+      "total_tokens": 7991,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 5,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 2895,
+      "output_tokens": 14,
+      "cache_read_tokens": 1216,
+      "cache_write_tokens": 0,
+      "total_tokens": 4125,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 6,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 878,
+      "output_tokens": 24,
+      "cache_read_tokens": 4096,
+      "cache_write_tokens": 0,
+      "total_tokens": 4998,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 7,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 29,
+      "output_tokens": 1531,
+      "cache_read_tokens": 4992,
+      "cache_write_tokens": 0,
+      "total_tokens": 6552,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 8,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 873,
+      "output_tokens": 866,
+      "cache_read_tokens": 6528,
+      "cache_write_tokens": 0,
+      "total_tokens": 8267,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 9,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "total_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 10,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 2305,
+      "output_tokens": 59,
+      "cache_read_tokens": 2112,
+      "cache_write_tokens": 0,
+      "total_tokens": 4476,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 11,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 4738,
+      "output_tokens": 216,
+      "cache_read_tokens": 4416,
+      "cache_write_tokens": 0,
+      "total_tokens": 9370,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 12,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 368,
+      "output_tokens": 711,
+      "cache_read_tokens": 9344,
+      "cache_write_tokens": 0,
+      "total_tokens": 10423,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 13,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 74,
+      "output_tokens": 575,
+      "cache_read_tokens": 10368,
+      "cache_write_tokens": 0,
+      "total_tokens": 11017,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 14,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "total_tokens": 0,
+      "cost_total": 0
+    }
+  ],
+  "pi_exit_code": 0,
+  "telemetry_source": "pi-json-event-stream",
+  "port_reclamation": {
+    "preexisting_listener": false,
+    "listener_after_pi": false,
+    "attempted": false,
+    "reclaimed": false,
+    "process_ids": [],
+    "diagnostic": "Port 3000 remained free after Pi"
+  }
+}
