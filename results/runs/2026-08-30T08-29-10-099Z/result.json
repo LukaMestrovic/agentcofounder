@@ -1,0 +1,195 @@
+{
+  "run_id": "2026-08-30T08-29-10-099Z",
+  "weighted_score": 57311.2,
+  "status": "partial",
+  "app_url": "http://localhost:3000",
+  "start_command": "npm --prefix '../../../output/fixrun-01' run dev",
+  "summary": "Workshop Loan Tracker: generation completed, but independent verification did not pass.",
+  "implemented_features": [
+    "Add, edit, and remove equipment",
+    "Add, edit, and remove members",
+    "Loan available equipment to a member",
+    "Return loaned equipment",
+    "View current loans",
+    "Preserve records after refresh"
+  ],
+  "assumptions": [
+    "Built for Small community workshop coordinators managing shared equipment and member access.",
+    "Persistence decision: Browser localStorage with JSON serialization under a single key per entity collection; load with malformed-data recovery that falls back to empty arrays."
+  ],
+  "tests_run": [
+    {
+      "command": "npm test",
+      "journey": "Generated journey verification failed: Loan available equipment to a member, verify equipment status is loaned and loan appears in current loans; Attempt to loan the same equipment again, verify it is blocked; Return the loaned equipment, verify status is available and loan no longer in current loans; Attempt to delete equipment with an active loan, verify it is blocked; Delete equipment with no active loan, verify removal from the list. Failed checks: output/fixrun-01/node_modules/.bin/vitest run --reporter=json --outputFile=artifacts/runs/2026-08-30T08-29-10-099Z/verification/attempt-02/app-test-results.json --passWithNoTests=false",
+      "result": "failed"
+    }
+  ],
+  "harness_checks": [
+    {
+      "command": "output/fixrun-01/node_modules/.bin/vitest run --reporter=json --outputFile=artifacts/runs/2026-08-30T08-29-10-099Z/verification/attempt-02/app-test-results.json --passWithNoTests=false",
+      "journey": "The generated app's Vitest report contained at least one completed test and no failed, skipped, or todo tests",
+      "result": "failed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "The generated app completed a production build",
+      "result": "passed"
+    },
+    {
+      "command": "npm run dev",
+      "journey": "The generated app started its own HTTP server on port 3000 and shut down cleanly",
+      "result": "passed"
+    }
+  ],
+  "model_calls": 12,
+  "input_tokens": 24052,
+  "output_tokens": 9288,
+  "cache_read_tokens": 53952,
+  "cache_write_tokens": 0,
+  "total_tokens": 87292,
+  "reasoning_tokens": 0,
+  "cost_total": 0,
+  "call_log": [
+    {
+      "index": 1,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1993,
+      "output_tokens": 1594,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "total_tokens": 3587,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 2,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 15,
+      "output_tokens": 4,
+      "cache_read_tokens": 3584,
+      "cache_write_tokens": 0,
+      "total_tokens": 3603,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 3,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 3223,
+      "output_tokens": 6652,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "total_tokens": 9875,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 4,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 79,
+      "output_tokens": 3,
+      "cache_read_tokens": 9856,
+      "cache_write_tokens": 0,
+      "total_tokens": 9938,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 5,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 3479,
+      "output_tokens": 62,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "total_tokens": 3541,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 6,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 6615,
+      "output_tokens": 81,
+      "cache_read_tokens": 3520,
+      "cache_write_tokens": 0,
+      "total_tokens": 10216,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 7,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 59,
+      "output_tokens": 4,
+      "cache_read_tokens": 10176,
+      "cache_write_tokens": 0,
+      "total_tokens": 10239,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 8,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1847,
+      "output_tokens": 69,
+      "cache_read_tokens": 1920,
+      "cache_write_tokens": 0,
+      "total_tokens": 3836,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 9,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 6645,
+      "output_tokens": 45,
+      "cache_read_tokens": 3776,
+      "cache_write_tokens": 0,
+      "total_tokens": 10466,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 10,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 47,
+      "output_tokens": 246,
+      "cache_read_tokens": 10432,
+      "cache_write_tokens": 0,
+      "total_tokens": 10725,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 11,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 50,
+      "output_tokens": 528,
+      "cache_read_tokens": 10688,
+      "cache_write_tokens": 0,
+      "total_tokens": 11266,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 12,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "total_tokens": 0,
+      "cost_total": 0
+    }
+  ],
+  "pi_exit_code": 0,
+  "telemetry_source": "pi-json-event-stream",
+  "port_reclamation": {
+    "preexisting_listener": false,
+    "listener_after_pi": false,
+    "attempted": false,
+    "reclaimed": false,
+    "process_ids": [],
+    "diagnostic": "Port 3000 remained free after Pi"
+  }
+}

@@ -1,0 +1,194 @@
+{
+  "run_id": "2026-08-25T13-01-53-338Z",
+  "weighted_score": 76971.2,
+  "status": "partial",
+  "app_url": "http://localhost:3000",
+  "start_command": "npm --prefix '../../../output/main-bench-02' run dev",
+  "summary": "Shelf List: generation completed, but independent verification did not pass.",
+  "implemented_features": [
+    "Add a book to the shelf",
+    "Lend and return books",
+    "View and filter the collection",
+    "Fix or remove a book",
+    "Survive a refresh"
+  ],
+  "assumptions": [
+    "Built for A single home-library owner who wants a private, local tool to remember which books are out and to whom..",
+    "Persistence decision: Browser localStorage under key 'shelf-list-books'. Book array serialized as JSON. On load, if storage is empty or malformed, start with an empty shelf."
+  ],
+  "tests_run": [
+    {
+      "command": "npm test",
+      "journey": "Generated journey verification failed: Add a novel, lend it to Sarah, verify it shows lent-out with badge and count increments, return it and verify badge is gone and count decrements; Add three books of different categories, filter by Novel and verify only novels show, toggle lent-only and verify only borrowed books show; Add a book, edit its title and category, verify changes persist after saveBooks/loadBooks round-trip; Delete a book and verify it no longer appears in the list or counts; Corrupt localStorage with invalid JSON, call loadBooks, verify empty array returned. Failed checks: output/main-bench-02/node_modules/.bin/vitest run --reporter=json --outputFile=artifacts/runs/2026-08-25T13-01-53-338Z/verification/attempt-02/app-test-results.json --passWithNoTests=false",
+      "result": "failed"
+    }
+  ],
+  "harness_checks": [
+    {
+      "command": "output/main-bench-02/node_modules/.bin/vitest run --reporter=json --outputFile=artifacts/runs/2026-08-25T13-01-53-338Z/verification/attempt-02/app-test-results.json --passWithNoTests=false",
+      "journey": "The generated app's Vitest report contained at least one completed test and no failed, skipped, or todo tests",
+      "result": "failed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "The generated app completed a production build",
+      "result": "passed"
+    },
+    {
+      "command": "npm run dev",
+      "journey": "The generated app started its own HTTP server on port 3000 and shut down cleanly",
+      "result": "passed"
+    }
+  ],
+  "model_calls": 12,
+  "input_tokens": 5295,
+  "output_tokens": 23235,
+  "cache_read_tokens": 19712,
+  "cache_write_tokens": 0,
+  "total_tokens": 48242,
+  "reasoning_tokens": 0,
+  "cost_total": 0,
+  "call_log": [
+    {
+      "index": 1,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 206,
+      "output_tokens": 2400,
+      "cache_read_tokens": 1792,
+      "cache_write_tokens": 0,
+      "total_tokens": 4398,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 2,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 955,
+      "output_tokens": 1624,
+      "cache_read_tokens": 1984,
+      "cache_write_tokens": 0,
+      "total_tokens": 4563,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 3,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "total_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 4,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1421,
+      "output_tokens": 10000,
+      "cache_read_tokens": 832,
+      "cache_write_tokens": 0,
+      "total_tokens": 12253,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 5,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 783,
+      "output_tokens": 36,
+      "cache_read_tokens": 1088,
+      "cache_write_tokens": 0,
+      "total_tokens": 1907,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 6,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 70,
+      "output_tokens": 199,
+      "cache_read_tokens": 1856,
+      "cache_write_tokens": 0,
+      "total_tokens": 2125,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 7,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 29,
+      "output_tokens": 605,
+      "cache_read_tokens": 1920,
+      "cache_write_tokens": 0,
+      "total_tokens": 2554,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 8,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 96,
+      "output_tokens": 4000,
+      "cache_read_tokens": 1920,
+      "cache_write_tokens": 0,
+      "total_tokens": 6016,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 9,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 945,
+      "output_tokens": 149,
+      "cache_read_tokens": 1088,
+      "cache_write_tokens": 0,
+      "total_tokens": 2182,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 10,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 667,
+      "output_tokens": 109,
+      "cache_read_tokens": 1984,
+      "cache_write_tokens": 0,
+      "total_tokens": 2760,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 11,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 50,
+      "output_tokens": 113,
+      "cache_read_tokens": 2624,
+      "cache_write_tokens": 0,
+      "total_tokens": 2787,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 12,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 73,
+      "output_tokens": 4000,
+      "cache_read_tokens": 2624,
+      "cache_write_tokens": 0,
+      "total_tokens": 6697,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    }
+  ],
+  "pi_exit_code": 0,
+  "telemetry_source": "pi-json-event-stream",
+  "port_reclamation": {
+    "preexisting_listener": false,
+    "listener_after_pi": false,
+    "attempted": false,
+    "reclaimed": false,
+    "process_ids": [],
+    "diagnostic": "Port 3000 remained free after Pi"
+  }
+}

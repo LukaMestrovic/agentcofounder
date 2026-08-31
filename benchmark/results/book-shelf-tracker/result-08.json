@@ -1,0 +1,105 @@
+{
+  "status": "success",
+  "app_url": "http://localhost:3000",
+  "start_command": "npm --prefix '../../../output/run-10' run dev",
+  "summary": "Shelf Tracker: A personal home-library tracker that records books, their authors and categories, and who has borrowed them—so you always know what is on your shelf and what is out on loan.",
+  "implemented_features": [
+    "Add a book to the collection",
+    "Edit or remove a book entered by mistake",
+    "Lend a book out and mark it returned",
+    "Filter the list to on-shelf or lent-out",
+    "See how many books are lent out right now"
+  ],
+  "assumptions": [
+    "Built for A single individual managing their personal book collection on their own computer..",
+    "Persistence decision: Browser localStorage under a single key; books array is serialized on every mutation and rehydrated on startup."
+  ],
+  "tests_run": [
+    {
+      "command": "npm test",
+      "journey": "Generated journey suite passed: Add a novel, a cookbook, and a reference book; verify all three appear in the list and survive a simulated reload; Lend one book to Alice and filter to lent-out; verify only that book shows and the count reads 1; Mark the book returned; verify it moves back to on-shelf and the count reads 0; Edit a book's title and category; verify the change persists and the id is unchanged; Delete a book; verify it no longer appears in any filter and the count is correct; Load with corrupted localStorage; verify app starts with an empty list and no crash",
+      "result": "passed"
+    }
+  ],
+  "harness_checks": [
+    {
+      "command": "output/run-10/node_modules/.bin/vitest run --reporter=json --outputFile=artifacts/runs/2026-08-24T10-50-27-430Z/verification/attempt-00/app-test-results.json --passWithNoTests=false",
+      "journey": "The generated app's Vitest report contained at least one completed test and no failed, skipped, or todo tests",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "The generated app completed a production build",
+      "result": "passed"
+    },
+    {
+      "command": "npm run dev",
+      "journey": "The generated app started its own HTTP server on port 3000 and shut down cleanly",
+      "result": "passed"
+    }
+  ],
+  "model_calls": 4,
+  "input_tokens": 1832,
+  "output_tokens": 8771,
+  "cache_read_tokens": 15552,
+  "cache_write_tokens": 0,
+  "total_tokens": 26155,
+  "reasoning_tokens": 0,
+  "cost_total": 0,
+  "call_log": [
+    {
+      "index": 1,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 198,
+      "output_tokens": 1593,
+      "cache_read_tokens": 1792,
+      "cache_write_tokens": 0,
+      "total_tokens": 3583,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 2,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 75,
+      "output_tokens": 4,
+      "cache_read_tokens": 3520,
+      "cache_write_tokens": 0,
+      "total_tokens": 3599,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 3,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 1454,
+      "output_tokens": 7171,
+      "cache_read_tokens": 832,
+      "cache_write_tokens": 0,
+      "total_tokens": 9457,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 4,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 105,
+      "output_tokens": 3,
+      "cache_read_tokens": 9408,
+      "cache_write_tokens": 0,
+      "total_tokens": 9516,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    }
+  ],
+  "pi_exit_code": 0,
+  "telemetry_source": "pi-json-event-stream",
+  "port_reclamation": {
+    "preexisting_listener": false,
+    "listener_after_pi": false,
+    "attempted": false,
+    "reclaimed": false,
+    "process_ids": [],
+    "diagnostic": "Port 3000 remained free after Pi"
+  }
+}

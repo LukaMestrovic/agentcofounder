@@ -1,6 +1,6 @@
 # Book shelf tracker runs
 
-These seven runs show the book shelf tracker progression through the current phase-isolated implementation. Each link points to its single canonical result record.
+These eight runs show the book shelf tracker progression through the current phase-isolated implementation. Each link points to its single canonical result record.
 
 | Run | Captured locally | Status | Model calls | Weighted score | Cost |
 | --- | --- | --- | ---: | ---: | ---: |
@@ -11,5 +11,12 @@ These seven runs show the book shelf tracker progression through the current pha
 | [`2026-08-23T12-20-11-774Z`](../../../results/runs/2026-08-23T12-20-11-774Z/result.json) | 2026-08-23 14:31 CEST | success | 28 | 92,515.6 | €0.041459 |
 | [`2026-08-23T12-34-11-882Z`](../../../results/runs/2026-08-23T12-34-11-882Z/result.json) | 2026-08-23 14:42 CEST | success | 12 | 53,501.4 | €0.028755 |
 | [`2026-08-23T15-34-35-544Z`](../../../results/runs/2026-08-23T15-34-35-544Z/result.json) | 2026-08-23 17:42 CEST | success | 4 | **29,400.6** | €0.019657 |
+| [`result-08.json`](result-08.json) | 2026-08-24 12:50 CEST | success | 4 | 29,700.2 | not reported |
 
 The weighted score is stored in each result and validated as `input_tokens + 3 * output_tokens + 0.1 * cache_read_tokens`.
+
+`result-08.json` predates the canonical `results/runs/<run-id>/` store, so it carries no `run_id` or
+`weighted_score` field and is still linked in place. Run `npm run results:organize -- --apply` to move
+it into the canonical store. It is the first run made after `--thinking off` was found not to reach
+Berget, and the first whose generated application passed independent verification on the first
+attempt, so it contains no repair phase at all.

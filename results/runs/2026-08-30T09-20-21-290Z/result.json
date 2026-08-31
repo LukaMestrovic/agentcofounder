@@ -1,0 +1,207 @@
+{
+  "run_id": "2026-08-30T09-20-21-290Z",
+  "weighted_score": 41170,
+  "status": "success",
+  "app_url": "http://localhost:3000",
+  "start_command": "npm --prefix '../../../output/fixrun-04' run dev",
+  "summary": "Shelf Ledger: A simple personal library tracker that records every book you own, who borrowed it, and lets you see at a glance what's out and what's on the shelf.",
+  "implemented_features": [
+    "Add a book to the collection",
+    "Edit or remove a book",
+    "Lend a book to someone",
+    "Return a borrowed book",
+    "Filter books by lent status",
+    "See how many are lent out",
+    "Data survives refresh"
+  ],
+  "assumptions": [
+    "Built for A single user managing their own book collection on their own computer..",
+    "Persistence decision: Browser localStorage under key 'shelf-ledger-books'. On load, parse JSON; if malformed or missing, start with an empty array."
+  ],
+  "tests_run": [
+    {
+      "command": "npm test",
+      "journey": "Generated journey suite passed: Add a book, lend it, verify count is 1, return it, verify count is 0; Add two books, filter to lent-out, see only the lent one; Edit a book's title and category, verify update persists in list; Delete a book, verify it no longer appears in list or count",
+      "result": "passed"
+    }
+  ],
+  "harness_checks": [
+    {
+      "command": "output/fixrun-04/node_modules/.bin/vitest run --reporter=json --outputFile=artifacts/runs/2026-08-30T09-20-21-290Z/verification/attempt-02/app-test-results.json --passWithNoTests=false",
+      "journey": "The generated app's Vitest report contained at least one completed test and no failed, skipped, or todo tests",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "journey": "The generated app completed a production build",
+      "result": "passed"
+    },
+    {
+      "command": "npm run dev",
+      "journey": "The generated app started its own HTTP server on port 3000 and shut down cleanly",
+      "result": "passed"
+    }
+  ],
+  "model_calls": 13,
+  "input_tokens": 13412,
+  "output_tokens": 7482,
+  "cache_read_tokens": 53120,
+  "cache_write_tokens": 0,
+  "total_tokens": 74014,
+  "reasoning_tokens": 0,
+  "cost_total": 0,
+  "call_log": [
+    {
+      "index": 1,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 222,
+      "output_tokens": 1296,
+      "cache_read_tokens": 1856,
+      "cache_write_tokens": 0,
+      "total_tokens": 3374,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 2,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 58,
+      "output_tokens": 4,
+      "cache_read_tokens": 3328,
+      "cache_write_tokens": 0,
+      "total_tokens": 3390,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 3,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 2247,
+      "output_tokens": 4488,
+      "cache_read_tokens": 704,
+      "cache_write_tokens": 0,
+      "total_tokens": 7439,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 4,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 73,
+      "output_tokens": 3,
+      "cache_read_tokens": 7424,
+      "cache_write_tokens": 0,
+      "total_tokens": 7500,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 5,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 2820,
+      "output_tokens": 15,
+      "cache_read_tokens": 1152,
+      "cache_write_tokens": 0,
+      "total_tokens": 3987,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 6,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 782,
+      "output_tokens": 13,
+      "cache_read_tokens": 3968,
+      "cache_write_tokens": 0,
+      "total_tokens": 4763,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 7,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 40,
+      "output_tokens": 812,
+      "cache_read_tokens": 4736,
+      "cache_write_tokens": 0,
+      "total_tokens": 5588,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 8,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 40,
+      "output_tokens": 75,
+      "cache_read_tokens": 5568,
+      "cache_write_tokens": 0,
+      "total_tokens": 5683,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 9,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "total_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 10,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 2287,
+      "output_tokens": 60,
+      "cache_read_tokens": 1856,
+      "cache_write_tokens": 0,
+      "total_tokens": 4203,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 11,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 4530,
+      "output_tokens": 382,
+      "cache_read_tokens": 4160,
+      "cache_write_tokens": 0,
+      "total_tokens": 9072,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 12,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 66,
+      "output_tokens": 274,
+      "cache_read_tokens": 9024,
+      "cache_write_tokens": 0,
+      "total_tokens": 9364,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    },
+    {
+      "index": 13,
+      "model": "berget/zai-org/GLM-5.2",
+      "input_tokens": 247,
+      "output_tokens": 60,
+      "cache_read_tokens": 9344,
+      "cache_write_tokens": 0,
+      "total_tokens": 9651,
+      "reasoning_tokens": 0,
+      "cost_total": 0
+    }
+  ],
+  "pi_exit_code": 0,
+  "telemetry_source": "pi-json-event-stream",
+  "port_reclamation": {
+    "preexisting_listener": false,
+    "listener_after_pi": false,
+    "attempted": false,
+    "reclaimed": false,
+    "process_ids": [],
+    "diagnostic": "Port 3000 remained free after Pi"
+  }
+}
