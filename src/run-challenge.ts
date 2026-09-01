@@ -283,7 +283,11 @@ export function buildOrchestratorArguments(
     "--no-themes",
     "--no-context-files",
     "--system-prompt",
-    `${appContext.trim()}\n\n${orchestratorPrompt.trim()}`,
+    // Idea-independent instructions first, then the app contract (also idea-independent) and only
+    // then the schema-derived scaffold summary. The prefix through the app contract is byte-identical
+    // across every run regardless of idea, which is what lets a provider-side prefix cache serve it as
+    // cheap cache-read tokens (0.1x weight) instead of full-price fresh input (1x weight) on repeat runs.
+    `${orchestratorPrompt.trim()}\n\n${appContext.trim()}`,
     "--extension",
     PROTECTED_EXTENSION,
     "--extension",
@@ -314,7 +318,8 @@ export function buildRepairArguments(
     "--no-themes",
     "--no-context-files",
     "--system-prompt",
-    `${appContext.trim()}\n\n${repairPrompt.trim()}`,
+    // Same static-prefix-first ordering as the orchestrator, for the same cross-run cache-hit reason.
+    `${repairPrompt.trim()}\n\n${appContext.trim()}`,
     "--extension",
     PROTECTED_EXTENSION,
     "--extension",

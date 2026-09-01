@@ -6,6 +6,7 @@ import type { AppVerification, PartialRunResult } from "./types.js";
 const ENTRY_ADAPTER = `import { StrictMode, type ComponentType } from "react";
 import { createRoot } from "react-dom/client";
 import * as AppModule from "./App.js";
+import "./design-system.css";
 import "./styles.css";
 
 const exports = AppModule as { App?: ComponentType; default?: ComponentType };

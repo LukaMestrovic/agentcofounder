@@ -26,6 +26,8 @@ describe("generated app finalization", () => {
     await normalizeGeneratedEntry(directory);
     const entry = await readFile(path.join(directory, "src", "main.tsx"), "utf8");
     expect(entry).toContain("exports.App ?? exports.default");
+    expect(entry.indexOf('"./design-system.css"')).toBeGreaterThan(-1);
+    expect(entry.indexOf('"./design-system.css"')).toBeLessThan(entry.indexOf('"./styles.css"'));
   });
 
   it("configures deterministic React cleanup in the generated copy", async () => {
